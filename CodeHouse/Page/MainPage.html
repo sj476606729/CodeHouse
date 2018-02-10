@@ -1,0 +1,416 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>IT资源整合</title>
+    <link href="../Frame/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <script src="../JS/jquery.min.js"></script>
+    <script src="../Frame/bootstrap/js/bootstrap-treeview.js"></script>
+    <script src="../Frame/layui/layui.js"></script>
+    <link href="../Frame/layui/css/layui.css" rel="stylesheet" />
+    <script>
+        var Nodeid, NodeText, IsKind = false;
+        var AllNode, layuiIndex;
+        var frames, USER;
+
+        window.onload = function () {
+            frames = window.parent.window.document.getElementById("frame");
+            $('#body').css("height", document.documentElement.clientHeight*0.95)
+            // Layui弹出框引入
+            layui.use('layer', function () {
+                var layer = layui.layer;
+
+                layer.msg('欢迎进入，专注采集各类IT资源整合');
+            });
+            
+            Initial();
+            FirstUser();
+        }
+        //初始化分类
+        function Initial() {
+            Nodeid = null;
+            
+            var pd = { "id": "Initial" }
+            $.ajax({
+                type: "post",
+                url: '../Ashx/Handler.ashx',//注意此文件必须与当前文件在同一目录下
+                data: pd,
+                dataType: "json",
+                error: function (textstatus) {
+
+                    alert('初始化出错');
+                    // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                },
+                success: function (result) {//result为任意定义的用于装载参数变量
+                    AllNode = eval(result);
+
+                    var jsonDataTree = transData(AllNode, 'Id', 'ParentId', 'nodes');
+                    NodeOperate(jsonDataTree);
+                    $('#load').html('');
+
+
+                }
+            });
+
+        }
+        //检索登陆账户
+        function ShowUser() {
+            var pd = { "id": "ShowUser" }
+            $.ajax({
+                type: "post",
+                url: '../Ashx/Handler.ashx',//注意此文件必须与当前文件在同一目录下
+                data: pd,
+                dataType: "json",
+                error: function (textstatus) {
+
+                    alert('初始化出错');
+                    // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                },
+                success: function (result) {//result为任意定义的用于装载参数变量
+                    obj = eval(result);
+                    $('#username').html(obj.result);
+
+
+
+                }
+            });
+        }
+        //添加数据
+        function AddData() {
+            var data_ = frames.contentWindow.getHtml() + "";
+            if (data_.indexOf("<hr />") < 0 || data_.indexOf("<p>参考网址：<a href=") < 0) { alert("添加代码不规范"); return; }
+            if (data_.indexOf("<hr />") < data_.indexOf("<p>参考网址：<a href=")) { alert("添加代码不规范"); return; }
+            if (TestUser() == false || Nodeid == null) { return; }
+            var data = encodeURI( frames.contentWindow.getHtml());
+            var title = $('#title').val();
+            var id = Nodeid;
+            var pd = { "id": "AddData", "Title": title, "Code": data, "Key": id, "User": USER }
+            $.ajax({
+                type: "post",
+                url: '../Ashx/Handler.ashx',//注意此文件必须与当前文件在同一目录下
+                data: pd,
+                dataType: "json",
+                error: function (textstatus) {
+
+                    alert('添加失败');
+                    // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                },
+                success: function (result) {//result为任意定义的用于装载参数变量
+                    var obj = eval(result);
+                    $("#tree").treeview("addNode", ["bbc4cc0039", { node: { text: "新加的菜单", href: "001005" } }]);  
+                    //Initial();
+                }
+            });
+        }
+        //添加分类
+        function AddKind() {
+            var id = Nodeid;
+            
+            var kind = $('#kind').val();
+            if (id == null || kind.length==0) { id = "无"; }
+            var pd = { "id": "AddKind", "Name": kind, "ParentId": id }
+            $.ajax({
+                type: "post",
+                url: '../Ashx/Handler.ashx',//注意此文件必须与当前文件在同一目录下
+                data: pd,
+                dataType: "json",
+                error: function (textstatus) {
+
+                    alert('出错');
+                    // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                },
+                success: function (result) {//result为任意定义的用于装载参数变量
+                    var obj = eval(result);
+                    Initial();
+                }
+            });
+        }
+        //修改
+        function Modify() {
+            if (Nodeid == null) { return; }
+            if (IsKind) {
+                var name = $('#kind').val();
+                var pd = { "id": "ModifyKind", "Name": name, "Key": Nodeid }
+                $.ajax({
+                    type: "post",
+                    url: '../Ashx/Handler.ashx',//注意此文件必须与当前文件在同一目录下
+                    data: pd,
+                    dataType: "json",
+                    error: function (textstatus) {
+
+                        alert('修改分类出错');
+                        // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                    },
+                    success: function (result) {//result为任意定义的用于装载参数变量
+                        var obj = eval(result);
+                        Initial();
+                    }
+                });
+            } else {
+                var title = $('#title').val(), Code = encodeURI(frames.contentWindow.getHtml());
+                var pd = { "id": "ModifyCode", "Title": title, "Code": Code, "Key": Nodeid, "OldTitle": NodeText, "User": USER }
+                $.ajax({
+                    type: "post",
+                    url: '../Ashx/Handler.ashx',//注意此文件必须与当前文件在同一目录下
+                    data: pd,
+                    dataType: "json",
+                    error: function (textstatus) {
+
+                        alert('修改代码出错');
+                        // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                    },
+                    success: function (result) {//result为任意定义的用于装载参数变量
+                        var obj = eval(result);
+                        Initial();
+                    }
+                });
+            }
+        }
+        //删除
+        function Delete() {
+            if (Nodeid == null) { return; }
+            if (IsKind) {
+                var pd = { "id": "DeleteKind", "Key": Nodeid }
+                $.ajax({
+                    type: "post",
+                    url: '../Ashx/Handler.ashx',//注意此文件必须与当前文件在同一目录下
+                    data: pd,
+                    dataType: "json",
+                    error: function (textstatus) {
+
+                        alert('删除出错');
+                        // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                    },
+                    success: function (result) {//result为任意定义的用于装载参数变量
+                        var obj = eval(result);
+                        Initial();
+                    }
+                });
+            } else {
+                var pd = { "id": "DeleteCode", "Key": Nodeid, "Title": NodeText }
+                $.ajax({
+                    type: "post",
+                    url: '../Ashx/Handler.ashx',//注意此文件必须与当前文件在同一目录下
+                    data: pd,
+                    dataType: "json",
+                    error: function (textstatus) {
+
+                        alert('删除出错');
+                        // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                    },
+                    success: function (result) {//result为任意定义的用于装载参数变量
+                        var obj = eval(result);
+                        Initial();
+                    }
+                });
+            }
+        }
+        //第一次打开检索账户
+        function FirstUser() {
+            var pd = { "id": "FirstUser" }
+            $.ajax({
+                type: "post",
+                url: '../Ashx/Handler.ashx',//注意此文件必须与当前文件在同一目录下
+                data: pd,
+                dataType: "json",
+                error: function (textstatus) {
+
+                    $('#user').html("未登录");
+                    // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                },
+                success: function (result) {//result为任意定义的用于装载参数变量
+                    var obj = eval(result);
+                    USER = obj.result;
+                    $('#user').html(obj.result);
+                }
+            });
+            var data = '<p> 参考网址：</p>' +
+                '<p>参考网址：</p>' +
+                '<hr />' +
+                '<p>&nbsp;</p>'
+            frames.contentWindow.setHtml(data);
+        }
+        //用户登陆
+        function Submit() {
+            var user = $('#username').val();
+            var pwd = $('#password').val();
+            var pd = { "id": "login", "username": user, "password": pwd }
+            $.ajax({
+                type: "post",
+                url: '../Ashx/Handler.ashx',//注意此文件必须与当前文件在同一目录下
+                data: pd,
+                dataType: "json",
+                error: function (textstatus) {
+
+                    alert('登陆出错');
+                    // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                },
+                success: function (result) {//result为任意定义的用于装载参数变量
+                    var obj = eval(result);
+                    parent.layer.close(layuiIndex);
+                    USER = obj.result;
+                    $('#user').html(obj.result);
+
+                }
+            });
+        }
+        //用户登录窗口
+        function User() {
+            var data = '<form style="margin-left:15px;margin-right:15px">' +
+                '<input id="username" placeholder="用户名" required="" type="text" />' +
+                '<hr class="hr15">' +
+                '<input id="password" placeholder="密码" required="" type="password">' +
+                '<hr class="hr15">' +
+                '<input value="登录" style="width:100%;" type="button" onclick="Submit()">' +
+                '<hr class="hr20">' +
+                '</form>'
+            layuiIndex = layer.open({
+                title: 'IT资源账户登陆',
+                type: 1,
+                content: data,
+            });
+        }
+        //检测账户是否登陆
+        function TestUser() {
+            if (USER == null) { alert("账户未登录!"); return false; }
+            return true;
+        }
+    </script>
+    <script>
+        //处理分类为树状图
+        function transData(a, idStr, pidStr, chindrenStr) {
+            var r = [], hash = {}, id = idStr, pid = pidStr, children = chindrenStr, i = 0, j = 0, len = a.length;
+            for (; i < len; i++) {
+                hash[a[i][id]] = a[i];
+            }
+            for (; j < len; j++) {
+                var aVal = a[j], hashVP = hash[aVal[pid]];
+                if (hashVP) {
+                    !hashVP[children] && (hashVP[children] = []);
+                    hashVP[children].push(aVal);
+                } else {
+                    r.push(aVal);
+                }
+            }
+            return r;
+        }
+        //节点操作
+        function NodeOperate(jsonDataTree) {
+            //导入分类数据
+            $('#tree').treeview({
+                data: jsonDataTree,         // data is not optionals
+                levels: 1,
+                backColor: 'white',
+                collapseIcon: 'glyphicon glyphicon-chevron-down'
+            });
+            //选中操作
+            $('#tree').on('nodeSelected', function (event, node) {
+                Nodeid = node.Id; NodeText = node.text;
+                IsKind = false;
+                if (node.color != "black") {
+                    IsKind = true; $('#addcode').attr("disabled", false);
+                    $('#addkind').attr("disabled", false);
+                    return;
+                }
+                $('#addcode').attr("disabled", true);
+                $('#addkind').attr("disabled", true);
+                    var pd = { "id": "ShowData", "Name": node.text }
+                    $.ajax({
+                        type: "post",
+                        url: '../Ashx/Handler.ashx',//注意此文件必须与当前文件在同一目录下
+                        data: pd,
+                        dataType: "json",
+                        error: function (textstatus) {
+
+
+                            // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                        },
+                        success: function (result) {//result为任意定义的用于装载参数变量
+                            var obj = eval(result);
+                            frames.contentWindow.setHtml(decodeURI(obj[0]["Code"]));
+                            $('#title').val(obj[0]["Title"]);
+                            $('#author').html("作者：" + obj[0]["Author"]);
+                        }
+                    });
+               
+            });
+        }
+
+    </script>
+    <style>
+        .loader--spinningDisc {
+            border: solid 0.5em #9b59b6;
+            border-right-color: transparent;
+            border-left-color: transparent;
+            padding: 0.5em;
+            width:5em;
+            height: 5em;
+            border-radius: 50%;
+            background: #3498db;
+            background-clip: content-box;
+            animation: spinDisc 1.5s linear infinite;
+        }
+
+        @keyframes spinDisc {
+            50% {
+                border-top-color: #3498db;
+                border-bottom-color: #3498db;
+                background-color: #2ecc71;
+            }
+
+            100% {
+                transform: rotate(1turn);
+            }
+        }
+    </style>
+</head>
+
+<body style="width:100%;" id="body">
+    <ul class="layui-nav">
+        <li class="layui-nav-item">
+            <a href="">控制台<span class="layui-badge">9</span></a>
+        </li>
+        <li class="layui-nav-item">
+            <a href="">个人中心<span class="layui-badge-dot"></span></a>
+        </li>
+        <li class="layui-nav-item">
+            <table>
+                <tr>
+                    <td><img src="http://t.cn/RCzsdCq" class="layui-nav-img" /></td>
+                    <td id="user" onclick="User()" style="cursor:pointer">未登录</td>
+                </tr>
+            </table>
+            <dl class="layui-nav-child">
+                <dd><a href="javascript:;">修改信息</a></dd>
+                <dd><a href="javascript:;">安全管理</a></dd>
+                <dd><a href="javascript:;">退了</a></dd>
+            </dl>
+        </li>
+    </ul>
+    <table style="width:98%;height:100%;margin-left:1%">
+        <tr style="width:100%;height:10%">
+            <td style="width:20%;">
+                <button style="width:20%;height:70%;float:left;" id="addcode" onclick="AddData()">添加数据</button>
+                <button style="width:20%;height:70%;float:left;"id="addkind" onclick="AddKind()">添加分类</button>
+                <button style="width:20%;height:70%;float:left;" onclick="Modify()">修改</button>
+                <button style="width:20%;height:70%;float:left;" onclick="Delete()">删除</button>
+            </td>
+            <td style="width:80%;padding-top:1%;padding-left:1%;">
+                <input id="kind" type="text" style="width:20%;height:70%;float:left;" placeholder="分类名称" />
+                <input id="title" type="text" style="width:69%;height:70%;text-align:center;float:left;margin-left:1%" />
+                <div id="author" style="float:left;width:9%;margin-left:1%;height:70%;color:blueviolet"></div>
+            </td>
+        </tr>
+        <tr style="width:100%;height:90%">
+            <td valign="top"><div id="load"><div class='loader loader--spinningDisc'></div></div>
+            <div id="tree" style="width:100%;height:100%;overflow:scroll"></div>
+            
+            </td>
+            <td style="width:80%;" valign="top">
+                <iframe id="frame" src="../Frame/tinyMce/editor.html" style="width:100%;margin-left:1%;height:94%"></iframe>
+            </td>
+        </tr>
+    </table>
+
+</body>
+</html>

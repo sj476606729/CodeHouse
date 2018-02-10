@@ -1,0 +1,107 @@
+﻿<html>
+
+<head><title>TinyMce</title>
+
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+    <script language="javascript" type="text/javascript" src="./tinymce.min.js"></script>
+
+    <script language="javascript" type="text/javascript">
+
+tinymce.init({
+    selector: "textarea",
+
+    <!--forced_root_block: "",-->
+
+    <!--theme: "modern",-->
+
+    language : "zh_CN",
+
+    <!--width: 900,-->
+
+    <!--height: 570,-->
+
+    <!--resize: "both",-->
+
+    plugins: [
+
+         "advlist autolink link image lists charmap preview hr anchor pagebreak",
+
+         "searchreplace visualblocks visualchars code fullscreen insertdatetime media nonbreaking",
+
+         "save table contextmenu directionality emoticons template paste textcolor codesample"
+
+   ],
+
+   toolbar: "fullscreen",
+
+   <!--nowrap: true,-->
+
+   <!--cleanup : false,-->
+
+   statusbar: false,
+
+   <!--content_css: "./skins/lightgray/content.min.css",-->
+
+   toolbar: "formatselect | fontselect | fontsizeselect | forecolor backcolor | bold italic | alignleft aligncenter alignright | bullist numlist outdent indent | link image | hr emoticons | codesample",
+ }).then(function(editors) {
+            tinymce.activeEditor.shortcuts.remove('meta+s');
+            tinymce.activeEditor.execCommand('mceFullScreen');
+ });
+    </script>
+
+
+</head>
+
+
+<body>
+
+
+<textarea id="editor">
+<pre class="language-csharp"><code> private void Form1_Load(object sender, EventArgs e)
+        {
+          
+            listView1.Hide();
+            isListViewHide = true;
+            Form_Login.NewInstance.Show();
+            Form1_Resize(sender,e);
+            thread = new Thread(Initialization);
+            thread.Start();
+            Cef.Initialize(new CefSettings());
+            webedit = new ChromiumWebBrowser(System.Environment.CurrentDirectory   "\\tinyMce\\模板.html");
+      
+            this.panel1.Controls.Add(webedit);
+            webedit.Dock = DockStyle.Fill;
+          
+
+            treeView1.HideSelection = false;
+            //自已绘制
+            this.treeView1.DrawMode = TreeViewDrawMode.OwnerDrawText;
+            this.treeView1.DrawNode  = new DrawTreeNodeEventHandler(treeView1_DrawNode);
+
+            //setRightMenu();
+            button2.Hide();
+            right = form1.Width - comboBox1.Left;
+           
+        }</code></pre></textarea>
+
+<script>
+        // 设置HTML内容
+        var setHtml = function(content) {
+            tinymce.activeEditor.setContent(decodeURIComponent(content.replace(/\+/g, '%20')));
+        };
+
+        // 取得HTML内容
+        var getHtml = function () {
+            var html = tinymce.activeEditor.getContent();
+            return html;
+        };
+	// 设置编辑模式
+        var setMode = function (mode) {
+            tinymce.activeEditor.setMode(mode);
+           
+        };
+</script>
+
+</body>
+</html> 

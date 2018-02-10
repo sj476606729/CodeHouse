@@ -1,0 +1,75 @@
+﻿<html>
+
+<head><title>TinyMce</title>
+
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+    <script language="javascript" type="text/javascript" src="./tinymce.min.js"></script>
+
+    <script language="javascript" type="text/javascript">
+
+tinymce.init({
+    selector: "textarea",
+
+    language : "zh_CN",
+    plugins: [
+
+         "advlist autolink link image lists charmap preview hr anchor pagebreak",
+
+         "searchreplace visualblocks visualchars code fullscreen insertdatetime media nonbreaking",
+
+         "save table contextmenu directionality emoticons template paste textcolor codesample"
+
+   ],
+
+   toolbar: "fullscreen",
+
+
+
+   statusbar: false,
+
+   toolbar: "formatselect | fontselect | fontsizeselect | forecolor backcolor | bold italic | alignleft aligncenter alignright | bullist numlist outdent indent | link image | hr emoticons | codesample",
+
+
+}).then(function (editors) {
+            tinymce.activeEditor.shortcuts.remove('meta+s');
+            tinymce.activeEditor.execCommand('mceFullScreen');
+            });
+
+    </script>
+
+    <script>
+        // 取得HTML内容
+        function getHtml() {
+            var html = tinymce.activeEditor.getContent();
+            return html;
+        };
+        //设置HTML内容
+        function setHtml(content) {
+            tinymce.activeEditor.setContent(decodeURIComponent(content.replace(/\+/g, '%20')));
+        };
+    </script>
+</head>
+
+
+<body id="b">
+
+
+<textarea id="editor"></textarea>
+<script>
+	// 设置编辑模式
+        var setMode = function (mode) {
+            tinymce.activeEditor.setMode(mode);
+           
+        };
+        var data = '<div>'+
+            '< p > 参考网址：</p>'+
+                '<p>参考网址：</p>'+
+                '<hr />'+
+                '<p>&nbsp;</p>'+
+            '</div >'
+        tinymce.activeEditor.setContent(decodeURIComponent(data.replace(/\+/g, '%20')));
+</script>
+
+</body>
+</html> 
