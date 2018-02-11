@@ -367,6 +367,7 @@
         }
 
     </script>
+   <!--加载动画-->
     <style>
         .loader--spinningDisc {
             border: solid 0.5em #9b59b6;
@@ -392,6 +393,7 @@
                 transform: rotate(1turn);
             }
         }
+
     </style>
 </head>
 
@@ -403,44 +405,36 @@
         <li class="layui-nav-item">
             <a href="">个人中心<span class="layui-badge-dot"></span></a>
         </li>
-        <li class="layui-nav-item">
+        <li class="layui-nav-item" style="width:80%">
             <table>
                 <tr>
-                    <td><img src="http://t.cn/RCzsdCq" class="layui-nav-img" /></td>
-                    <td id="user" onclick="User()" style="cursor:pointer">未登录</td>
+                    <td style="width:1%"><img src="http://t.cn/RCzsdCq" class="layui-nav-img" /></td>
+                    <td id="user" onclick="User()" style="cursor:pointer;width:4%">未登录</td>
+                    <td style="width:10%"><input id="kind" type="text" style="width:100%;height:60%;background-color:transparent;color:aliceblue;border:none" placeholder="分类名称" /></td>
+                    <td style="width:30%"><input id="title" type="text" style="width:100%;height:60%;text-align:center;color:cornflowerblue;margin-left:1%;background-color: transparent;font-size:130%;border:none" placeholder="代码标题" /></td>
+                    <td style="width:5%"><div><div id="author" style="width:100%;margin-left:15px;height:60%;color:aqua"></div></div></td>
                 </tr>
             </table>
-            <dl class="layui-nav-child">
-                <dd><a href="javascript:;">修改信息</a></dd>
-                <dd><a href="javascript:;">安全管理</a></dd>
-                <dd><a href="javascript:;">退了</a></dd>
-            </dl>
+
         </li>
     </ul>
-    <table style="width:98%;height:100%;margin-left:1%">
-        <tr style="width:100%;height:10%">
-            <td style="width:20%;">
-                <button style="width:20%;height:70%;float:left;" id="addcode" onclick="AddData()">添加数据</button>
-                <button style="width:20%;height:70%;float:left;"id="addkind" onclick="AddKind()">添加分类</button>
-                <button style="width:20%;height:70%;float:left;" onclick="Modify()">修改</button>
-                <button style="width:20%;height:70%;float:left;" onclick="Delete()">删除</button>
-            </td>
-            <td style="width:80%;padding-top:1%;padding-left:1%;">
-                <input id="kind" type="text" style="width:20%;height:70%;float:left;" placeholder="分类名称" />
-                <input id="title" type="text" style="width:69%;height:70%;text-align:center;float:left;margin-left:1%" />
-                <div id="author" style="float:left;width:9%;margin-left:1%;height:70%;color:blueviolet"></div>
+    <table style="width:20%;height:100%;margin-left:1%;float:left">
+        <tr style="width:100%;height:7%">
+            <td style="width:100%;">
+                <button style="width:20%;height:70%;float:left;font-size:85%" id="addcode" onclick="AddData()">添加数据</button>
+                <button style="width:20%;height:70%;float:left;margin-left:3%;font-size:85%" id="addkind" onclick="AddKind()">添加分类</button>
+                <button style="width:20%;height:70%;float:left;margin-left:3%;font-size:85%" onclick="Modify()">修改</button>
+                <button style="width:20%;height:70%;float:left;margin-left:3%;font-size:85%" onclick="Delete()">删除</button>
             </td>
         </tr>
-        <tr style="width:100%;height:90%">
-            <td valign="top"><div id="load"><div class='loader loader--spinningDisc'></div></div>
-            <div id="tree" style="width:100%;height:100%;overflow:auto"></div>
-            
-            </td>
-            <td style="width:80%;" valign="top">
-                <iframe id="frame" src="../Frame/tinyMce/editor.html" style="width:100%;margin-left:1%;height:94%"></iframe>
+        <tr style="width:100%;height:93%">
+            <td valign="top">
+                <div id="load"><div class='loader loader--spinningDisc'></div></div>
+                <div id="tree" style="width:100%;height:100%;overflow:auto"></div>
+
             </td>
         </tr>
     </table>
-
+    <iframe id="frame" src="../Frame/tinyMce/editor.html" style="width:78%;float:left;margin-left:1%;height:94%" onclick="Bigger()"></iframe>
 </body>
 </html>
