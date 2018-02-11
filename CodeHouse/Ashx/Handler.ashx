@@ -16,12 +16,12 @@ public class Handler : IHttpHandler,IRequiresSessionState{
         switch (id)
         {
             case "AddData":
-                result_bol = operation.AddData(HttpContext.Current.Request.Form["Title"],HttpContext.Current.Request.Form["Key"].ToString(), HttpContext.Current.Request.Form["Code"],HttpContext.Current.Request.Form["User"]);
-                if (result_bol) { context.Response.Write("{\"result\":\"" + result_bol + "\"}"); }
+                result_str = operation.AddData(HttpContext.Current.Request.Form["Title"],HttpContext.Current.Request.Form["Key"].ToString(), HttpContext.Current.Request.Form["Code"],HttpContext.Current.Request.Form["User"]);
+                context.Response.Write("{\"result\":\"" + result_str + "\"}"); 
                 break;
             case "AddKind":
-                result_bol = operation.AddKind(HttpContext.Current.Request.Form["ParentId"], HttpContext.Current.Request.Form["Name"]);
-                context.Response.Write("{\"result\":\"" + result_bol + "\"}");
+                result_str = operation.AddKind(HttpContext.Current.Request.Form["ParentId"], HttpContext.Current.Request.Form["Name"]);
+                context.Response.Write("{\"result\":\"" + result_str + "\"}");
                 break;
             case "Initial":
                 result_str = operation.ToKindJson(operation.GetAllKind(),operation.GetAllCode());
@@ -37,8 +37,8 @@ public class Handler : IHttpHandler,IRequiresSessionState{
                 if (result_bol) { context.Response.Write("{\"result\":\"" + result_bol + "\"}"); }
                 break;
             case "ModifyCode":
-                result_bol = operation.ModifyCode(HttpContext.Current.Request.Form["Title"], HttpContext.Current.Request.Form["Code"], HttpContext.Current.Request.Form["Key"],HttpContext.Current.Request.Form["OldTitle"],HttpContext.Current.Request.Form["User"]);
-                if (result_bol) { context.Response.Write("{\"result\":\"" + result_bol + "\"}"); }
+                result_str = operation.ModifyCode(HttpContext.Current.Request.Form["Title"], HttpContext.Current.Request.Form["Code"], HttpContext.Current.Request.Form["Key"],HttpContext.Current.Request.Form["OldTitle"]);
+                context.Response.Write("{\"result\":\"" + result_str + "\"}"); 
                 break;
             case "login":
                 result_str = operation.TestUser(HttpContext.Current.Request.Form["username"], HttpContext.Current.Request.Form["password"]);
@@ -51,12 +51,12 @@ public class Handler : IHttpHandler,IRequiresSessionState{
                 }
                 break;
            case "DeleteKind":
-                result_bol = operation.DeleteKind(HttpContext.Current.Request.Form["Key"]);
-                if (result_bol) { context.Response.Write("{\"result\":\"" + result_bol + "\"}"); }
+                result_str = operation.DeleteKind(HttpContext.Current.Request.Form["Key"]);
+                context.Response.Write("{\"result\":\"" + result_str + "\"}"); 
                 break;
             case "DeleteCode":
-                result_bol = operation.DeleteCode(HttpContext.Current.Request.Form["Key"],HttpContext.Current.Request.Form["Title"]);
-                if (result_bol) { context.Response.Write("{\"result\":\"" + result_bol + "\"}"); }
+                result_str = operation.DeleteCode(HttpContext.Current.Request.Form["Key"],HttpContext.Current.Request.Form["Title"]);
+                context.Response.Write("{\"result\":\"" + result_str + "\"}"); 
                 break;
         }
     }

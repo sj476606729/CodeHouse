@@ -11,7 +11,7 @@
     <script>
         var Nodeid, NodeText, IsKind = false;
         var AllNode, layuiIndex;
-        var frames, USER;
+        var frames, USER,NodeAuthor;
 
         window.onload = function () {
             frames = window.parent.window.document.getElementById("frame");
@@ -41,11 +41,11 @@
                     alert('初始化出错');
                     // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
                 },
-                success: function (result) {//result为任意定义的用于装载参数变量
-                    AllNode = eval(result);
-
-                    var jsonDataTree = transData(AllNode, 'Id', 'ParentId', 'nodes');
-                    NodeOperate(jsonDataTree);
+                success: function (result1) {//result为任意定义的用于装载参数变量
+                    AllNode = eval(result1);
+                    $('#number').html(AllNode.length);
+                    var data = TreeData(AllNode, "无");
+                    NodeOperate(data);
                     $('#load').html('');
 
 
@@ -92,13 +92,16 @@
                 dataType: "json",
                 error: function (textstatus) {
 
-                    alert('添加失败');
+                    alert('添加返回失败');
                     // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
                 },
                 success: function (result) {//result为任意定义的用于装载参数变量
                     var obj = eval(result);
-                    $("#tree").treeview("addNode", ["bbc4cc0039", { node: { text: "新加的菜单", href: "001005" } }]);  
-                    //Initial();
+                    if ((obj.result + "").substr(0, 2) == "出错") { alert(obj.result); result; }
+                    var data = { "Id": obj.result, "text": title, "ParentId": id, "color": "black", "icon": "glyphicon glyphicon-pencil" }
+                    AllNode.push(data);
+                    var jsonDataTree = TreeData(AllNode, "无");
+                    NodeOperate(jsonDataTree);
                 }
             });
         }
@@ -107,7 +110,7 @@
             var id = Nodeid;
             
             var kind = $('#kind').val();
-            if (id == null || kind.length==0) { id = "无"; }
+            if (id == null || kind.length == 0) { id = "无"; }
             var pd = { "id": "AddKind", "Name": kind, "ParentId": id }
             $.ajax({
                 type: "post",
@@ -116,12 +119,16 @@
                 dataType: "json",
                 error: function (textstatus) {
 
-                    alert('出错');
+                    alert('添加返回出错');
                     // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
                 },
                 success: function (result) {//result为任意定义的用于装载参数变量
                     var obj = eval(result);
-                    Initial();
+                    if (obj.result.length <= 6) { alert(obj.result); return; }
+                    var data = { "Id": obj.result, "text": kind, "ParentId": id, "color": "blue", "icon": "glyphicon glyphicon-folder-open" }
+                    AllNode.push(data);
+                    var jsonDataTree = TreeData(AllNode, "无");
+                    NodeOperate(jsonDataTree);
                 }
             });
         }
@@ -147,8 +154,9 @@
                     }
                 });
             } else {
+                if (USER != NodeAuthor) { alert("不能修改非本账户代码数据"); return; }
                 var title = $('#title').val(), Code = encodeURI(frames.contentWindow.getHtml());
-                var pd = { "id": "ModifyCode", "Title": title, "Code": Code, "Key": Nodeid, "OldTitle": NodeText, "User": USER }
+                var pd = { "id": "ModifyCode", "Title": title, "Code": Code, "Key": Nodeid, "OldTitle": NodeText}
                 $.ajax({
                     type: "post",
                     url: '../Ashx/Handler.ashx',//注意此文件必须与当前文件在同一目录下
@@ -161,7 +169,7 @@
                     },
                     success: function (result) {//result为任意定义的用于装载参数变量
                         var obj = eval(result);
-                        Initial();
+                        if ((obj.result + "").substr(0, 2) == "出错") alert(obj.result);
                     }
                 });
             }
@@ -169,6 +177,7 @@
         //删除
         function Delete() {
             if (Nodeid == null) { return; }
+            
             if (IsKind) {
                 var pd = { "id": "DeleteKind", "Key": Nodeid }
                 $.ajax({
@@ -178,15 +187,24 @@
                     dataType: "json",
                     error: function (textstatus) {
 
-                        alert('删除出错');
+                        alert('删除返回出错');
                         // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
                     },
                     success: function (result) {//result为任意定义的用于装载参数变量
                         var obj = eval(result);
-                        Initial();
+                        if ((obj.result + "").substr(0, 2) == "出错") { alert(obj.result); return; }
+                        var data = [];
+                        for (var i = 0; i < AllNode.length; i++) {
+                            if (AllNode[i]["Id"] != Nodeid) {
+                                data.push(AllNode[i]);
+                            }
+                        }
+                        var jsonDataTree = TreeData(data, "无");
+                        NodeOperate(jsonDataTree);
                     }
                 });
             } else {
+                if (USER != NodeAuthor) { alert("不能删除非本账户的代码数据"); return; }
                 var pd = { "id": "DeleteCode", "Key": Nodeid, "Title": NodeText }
                 $.ajax({
                     type: "post",
@@ -195,12 +213,20 @@
                     dataType: "json",
                     error: function (textstatus) {
 
-                        alert('删除出错');
+                        alert('删除返回出错');
                         // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
                     },
                     success: function (result) {//result为任意定义的用于装载参数变量
                         var obj = eval(result);
-                        Initial();
+                        if ((obj.result + "").substr(0, 2) == "出错") { alert(obj.result); return; }
+                        var data = [];
+                        for (var i = 0; i < AllNode.length; i++) {
+                            if (AllNode[i]["Id"] != Nodeid) {
+                                data.push(AllNode[i]);
+                            }
+                        }
+                        var jsonDataTree = TreeData(data, "无");
+                        NodeOperate(jsonDataTree);
                     }
                 });
             }
@@ -278,25 +304,27 @@
     </script>
     <script>
         //处理分类为树状图
-        function transData(a, idStr, pidStr, chindrenStr) {
-            var r = [], hash = {}, id = idStr, pid = pidStr, children = chindrenStr, i = 0, j = 0, len = a.length;
-            for (; i < len; i++) {
-                hash[a[i][id]] = a[i];
-            }
-            for (; j < len; j++) {
-                var aVal = a[j], hashVP = hash[aVal[pid]];
-                if (hashVP) {
-                    !hashVP[children] && (hashVP[children] = []);
-                    hashVP[children].push(aVal);
-                } else {
-                    r.push(aVal);
+        function TreeData(data, parentId) {
+            var itemArr = [];
+            for (var i = 0; i < data.length; i++) {
+                var node = data[i];
+                //data.splice(i, 1)
+                if (node["ParentId"] == parentId) {
+                    var newNode = { Id: node.Id, text: node["text"], color: node.color, icon: node.icon };
+                    for (var j = 0; j < data.length; j++) {
+                        if (data[j].ParentId == node.Id) {
+                            newNode["nodes"] = TreeData(data, node.Id); break;
+                        }
+                    }
+                    itemArr.push(newNode);
                 }
             }
-            return r;
+            return itemArr;
         }
         //节点操作
         function NodeOperate(jsonDataTree) {
             //导入分类数据
+            
             $('#tree').treeview({
                 data: jsonDataTree,         // data is not optionals
                 levels: 1,
@@ -314,6 +342,7 @@
                 }
                 $('#addcode').attr("disabled", true);
                 $('#addkind').attr("disabled", true);
+                
                     var pd = { "id": "ShowData", "Name": node.text }
                     $.ajax({
                         type: "post",
@@ -329,6 +358,7 @@
                             var obj = eval(result);
                             frames.contentWindow.setHtml(decodeURI(obj[0]["Code"]));
                             $('#title').val(obj[0]["Title"]);
+                            NodeAuthor = obj[0]["Author"];
                             $('#author').html("作者：" + obj[0]["Author"]);
                         }
                     });
@@ -368,7 +398,7 @@
 <body style="width:100%;" id="body">
     <ul class="layui-nav">
         <li class="layui-nav-item">
-            <a href="">控制台<span class="layui-badge">9</span></a>
+            <a href="">总条目<span class="layui-badge" id="number">9</span></a>
         </li>
         <li class="layui-nav-item">
             <a href="">个人中心<span class="layui-badge-dot"></span></a>

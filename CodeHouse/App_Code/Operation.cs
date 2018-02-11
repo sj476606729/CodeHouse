@@ -308,7 +308,7 @@ namespace Operate
         /// <param name="Code"></param>
         /// <param name="Author"></param>
         /// <returns></returns>
-        public bool AddData(string Title, string Kind, string Code, string Author)
+        public string AddData(string Title, string Kind, string Code, string Author)
         {
             try
             {
@@ -317,19 +317,22 @@ namespace Operate
                 codeModel.Code = Code;
                 codeModel.Author = Author;
                 var future = Bmob.CreateTaskAsync(codeModel);
-                if (future.Result is IBmobWritable)
+                if (future.Result.objectId.Length>0)
                 {
                     KindModel kindModel = new KindModel("Kind_tb");
                     kindModel.ParentId = Kind;
                     kindModel.Name = Title;
                     var future1 = Bmob.CreateTaskAsync(kindModel);
-                    if (future1.Result is IBmobWritable) { return true;
-                    } else return false;
+                    if (future1.Result.objectId.Length > 0)
+                    {
+                        return future1.Result.objectId;
+                    }
+                    else return "出错,添加代码成功,添加标题失败";
                 }
-                else return false;
+                else return "出错,添加代码失败";
             }catch(Exception e)
             {
-                return false;
+                return "出错,已存在该标题";
             }
             
 
@@ -342,7 +345,7 @@ namespace Operate
         /// <param name="ParentId"></param>
         /// <param name="Name"></param>
         /// <returns></returns>
-        public bool AddKind(string ParentId, string Name)
+        public string AddKind(string ParentId, string Name)
         {
             var query = new BmobQuery();
             query.WhereContainedIn<string>("ParentId", ParentId);
@@ -354,9 +357,9 @@ namespace Operate
                 kindModel.ParentId = ParentId;
                 kindModel.Name = Name;
                 var future1 = Bmob.CreateTaskAsync(kindModel);
-                if(future1.Result.objectId.Length>0) { return true; }
+                if (future1.Result.objectId.Length > 0) { return future1.Result.objectId; } else return "添加失败";
             }
-            return false;
+            else return "已存在该分类";
         }
         /// <summary>
         /// 获取所有分类
@@ -476,7 +479,7 @@ namespace Operate
         /// <param name="Code"></param>
         /// <param name="Id"></param>
         /// <returns></returns>
-        public bool ModifyCode(string Title, string Code, string Id,string OldTitle,string User)
+        public string ModifyCode(string Title, string Code, string Id,string OldTitle)
         {
             var query = new BmobQuery();
             query.WhereContainedIn<string>("Title", OldTitle);
@@ -485,7 +488,6 @@ namespace Operate
             if(future.Result is IBmobWritable)
             {
                 Objectid = future.Result.results[0].objectId;
-                if (future.Result.results[0].Author != User) { return false; }
             }
             CodeModel codeModel = new CodeModel("Code_tb");
             codeModel.objectId = Objectid;
@@ -498,16 +500,16 @@ namespace Operate
                 kindModel.objectId = Id;
                 kindModel.Name = Title;
                 future1 = Bmob.UpdateTaskAsync<KindModel>(kindModel);
-                if (future1.Result is IBmobWritable) return true; else return false;
+                if (future1.Result is IBmobWritable) return "成功"; else return "出错,修改代码数据成功，修改标题失败";
             }
-            else return false;
+            else return "出错,修改i代码数据失败";
         }
         /// <summary>
         /// 删除分类
         /// </summary>
         /// <param name="Id"></param>
         /// <returns></returns>
-        public bool DeleteKind(string Id)
+        public string DeleteKind(string Id)
         {
             var query = new BmobQuery();
             query.WhereContainedIn<string>("ParentId", Id);
@@ -516,11 +518,11 @@ namespace Operate
             {
                 if (future.Result.results.Count > 0)
                 {
-                    return false;
+                    return "出错,该分类包含子项,删除失败";
                 }
             }
             var future1 = Bmob.DeleteTaskAsync("Kind_tb", Id);
-            if (future1.Result is IBmobWritable) return true; else return false;
+            if (future1.Result is IBmobWritable) return "删除成功"; else return "出错,删除分类失败";
 
         }
         /// <summary>
@@ -528,7 +530,7 @@ namespace Operate
         /// </summary>
         /// <param name="Id"></param>
         /// <returns></returns>
-        public bool DeleteCode(string Id, string Title)
+        public string DeleteCode(string Id, string Title)
         {
             var query = new BmobQuery();
             query.WhereContainedIn<string>("Title", Title);
@@ -542,9 +544,9 @@ namespace Operate
             if (future1.Result is IBmobWritable)
             {
                 future1 = Bmob.DeleteTaskAsync("Kind_tb", Id);
-                if (future1.Result is IBmobWritable) return true; else return false;
+                if (future1.Result is IBmobWritable) return "删除成功"; else return "出错,删除代码数据成功，删除标题失败";
             }
-            else return false;
+            else return "出错,删除代码数据失败";
         }
     }
     public class Kind_Model
