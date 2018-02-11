@@ -356,6 +356,7 @@
                         },
                         success: function (result) {//result为任意定义的用于装载参数变量
                             var obj = eval(result);
+                            //alert(decodeURI(obj[0]["Code"]));
                             frames.contentWindow.setHtml(decodeURI(obj[0]["Code"]));
                             $('#title').val(obj[0]["Title"]);
                             NodeAuthor = obj[0]["Author"];

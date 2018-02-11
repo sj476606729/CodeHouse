@@ -46,7 +46,7 @@ tinymce.init({
         };
         //设置HTML内容
         function setHtml(content) {
-            tinymce.activeEditor.setContent(decodeURIComponent(content.replace(/\+/g, '%20')));
+            tinymce.activeEditor.setContent(content);
         };
     </script>
 </head>
@@ -68,7 +68,7 @@ tinymce.init({
                 '<hr />'+
                 '<p>&nbsp;</p>'+
             '</div >'
-        tinymce.activeEditor.setContent(decodeURIComponent(data.replace(/\+/g, '%20')));
+        tinymce.activeEditor.setContent(data);
 </script>
 
 </body>
