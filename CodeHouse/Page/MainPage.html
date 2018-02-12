@@ -3,19 +3,17 @@
 <head>
     <meta charset="utf-8" />
     <title>IT资源整合</title>
-    <link href="../Frame/bootstrap/css/bootstrap.css" rel="stylesheet">
     <script src="../JS/jquery.min.js"></script>
-    <script src="../Frame/bootstrap/js/bootstrap-treeview.js"></script>
     <script src="../Frame/layui/layui.js"></script>
     <link href="../Frame/layui/css/layui.css" rel="stylesheet" />
     <script>
-        var Nodeid, NodeText, IsKind = false;
+        
         var AllNode, layuiIndex;
-        var frames, USER,NodeAuthor;
-
+        var USER;
         window.onload = function () {
-            frames = window.parent.window.document.getElementById("frame");
-            $('#body').css("height", document.documentElement.clientHeight*0.95)
+            
+            $('#body').css("height", document.documentElement.clientHeight * 0.95);
+
             // Layui弹出框引入
             layui.use('layer', function () {
                 var layer = layui.layer;
@@ -25,33 +23,6 @@
             
             Initial();
             FirstUser();
-        }
-        //初始化分类
-        function Initial() {
-            Nodeid = null;
-            
-            var pd = { "id": "Initial" }
-            $.ajax({
-                type: "post",
-                url: '../Ashx/Handler.ashx',//注意此文件必须与当前文件在同一目录下
-                data: pd,
-                dataType: "json",
-                error: function (textstatus) {
-
-                    alert('初始化出错');
-                    // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
-                },
-                success: function (result1) {//result为任意定义的用于装载参数变量
-                    AllNode = eval(result1);
-                    $('#number').html(AllNode.length);
-                    var data = TreeData(AllNode, "无");
-                    NodeOperate(data);
-                    $('#load').html('');
-
-
-                }
-            });
-
         }
         //检索登陆账户
         function ShowUser() {
@@ -75,162 +46,7 @@
                 }
             });
         }
-        //添加数据
-        function AddData() {
-            var data_ = frames.contentWindow.getHtml() + "";
-            if (data_.indexOf("<hr />") < 0 || data_.indexOf("<p>参考网址：<a href=") < 0) { alert("添加代码不规范"); return; }
-            if (data_.indexOf("<hr />") < data_.indexOf("<p>参考网址：<a href=")) { alert("添加代码不规范"); return; }
-            if (TestUser() == false || Nodeid == null) { return; }
-            var data = encodeURI( frames.contentWindow.getHtml());
-            var title = $('#title').val();
-            var id = Nodeid;
-            var pd = { "id": "AddData", "Title": title, "Code": data, "Key": id, "User": USER }
-            $.ajax({
-                type: "post",
-                url: '../Ashx/Handler.ashx',//注意此文件必须与当前文件在同一目录下
-                data: pd,
-                dataType: "json",
-                error: function (textstatus) {
-
-                    alert('添加返回失败');
-                    // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
-                },
-                success: function (result) {//result为任意定义的用于装载参数变量
-                    var obj = eval(result);
-                    if ((obj.result + "").substr(0, 2) == "出错") { alert(obj.result); result; }
-                    var data = { "Id": obj.result, "text": title, "ParentId": id, "color": "black", "icon": "glyphicon glyphicon-pencil" }
-                    AllNode.push(data);
-                    var jsonDataTree = TreeData(AllNode, "无");
-                    NodeOperate(jsonDataTree);
-                }
-            });
-        }
-        //添加分类
-        function AddKind() {
-            var id = Nodeid;
-            
-            var kind = $('#kind').val();
-            if (id == null || kind.length == 0) { id = "无"; }
-            var pd = { "id": "AddKind", "Name": kind, "ParentId": id }
-            $.ajax({
-                type: "post",
-                url: '../Ashx/Handler.ashx',//注意此文件必须与当前文件在同一目录下
-                data: pd,
-                dataType: "json",
-                error: function (textstatus) {
-
-                    alert('添加返回出错');
-                    // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
-                },
-                success: function (result) {//result为任意定义的用于装载参数变量
-                    var obj = eval(result);
-                    if (obj.result.length <= 6) { alert(obj.result); return; }
-                    var data = { "Id": obj.result, "text": kind, "ParentId": id, "color": "blue", "icon": "glyphicon glyphicon-folder-open" }
-                    AllNode.push(data);
-                    var jsonDataTree = TreeData(AllNode, "无");
-                    NodeOperate(jsonDataTree);
-                }
-            });
-        }
-        //修改
-        function Modify() {
-            if (Nodeid == null) { return; }
-            if (IsKind) {
-                var name = $('#kind').val();
-                var pd = { "id": "ModifyKind", "Name": name, "Key": Nodeid }
-                $.ajax({
-                    type: "post",
-                    url: '../Ashx/Handler.ashx',//注意此文件必须与当前文件在同一目录下
-                    data: pd,
-                    dataType: "json",
-                    error: function (textstatus) {
-
-                        alert('修改分类出错');
-                        // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
-                    },
-                    success: function (result) {//result为任意定义的用于装载参数变量
-                        var obj = eval(result);
-                        Initial();
-                    }
-                });
-            } else {
-                if (USER != NodeAuthor) { alert("不能修改非本账户代码数据"); return; }
-                var title = $('#title').val(), Code = encodeURI(frames.contentWindow.getHtml());
-                var pd = { "id": "ModifyCode", "Title": title, "Code": Code, "Key": Nodeid, "OldTitle": NodeText}
-                $.ajax({
-                    type: "post",
-                    url: '../Ashx/Handler.ashx',//注意此文件必须与当前文件在同一目录下
-                    data: pd,
-                    dataType: "json",
-                    error: function (textstatus) {
-
-                        alert('修改代码出错');
-                        // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
-                    },
-                    success: function (result) {//result为任意定义的用于装载参数变量
-                        var obj = eval(result);
-                        if ((obj.result + "").substr(0, 2) == "出错") alert(obj.result);
-                    }
-                });
-            }
-        }
-        //删除
-        function Delete() {
-            if (Nodeid == null) { return; }
-            
-            if (IsKind) {
-                var pd = { "id": "DeleteKind", "Key": Nodeid }
-                $.ajax({
-                    type: "post",
-                    url: '../Ashx/Handler.ashx',//注意此文件必须与当前文件在同一目录下
-                    data: pd,
-                    dataType: "json",
-                    error: function (textstatus) {
-
-                        alert('删除返回出错');
-                        // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
-                    },
-                    success: function (result) {//result为任意定义的用于装载参数变量
-                        var obj = eval(result);
-                        if ((obj.result + "").substr(0, 2) == "出错") { alert(obj.result); return; }
-                        var data = [];
-                        for (var i = 0; i < AllNode.length; i++) {
-                            if (AllNode[i]["Id"] != Nodeid) {
-                                data.push(AllNode[i]);
-                            }
-                        }
-                        var jsonDataTree = TreeData(data, "无");
-                        NodeOperate(jsonDataTree);
-                    }
-                });
-            } else {
-                if (USER != NodeAuthor) { alert("不能删除非本账户的代码数据"); return; }
-                var pd = { "id": "DeleteCode", "Key": Nodeid, "Title": NodeText }
-                $.ajax({
-                    type: "post",
-                    url: '../Ashx/Handler.ashx',//注意此文件必须与当前文件在同一目录下
-                    data: pd,
-                    dataType: "json",
-                    error: function (textstatus) {
-
-                        alert('删除返回出错');
-                        // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
-                    },
-                    success: function (result) {//result为任意定义的用于装载参数变量
-                        var obj = eval(result);
-                        if ((obj.result + "").substr(0, 2) == "出错") { alert(obj.result); return; }
-                        var data = [];
-                        for (var i = 0; i < AllNode.length; i++) {
-                            if (AllNode[i]["Id"] != Nodeid) {
-                                data.push(AllNode[i]);
-                            }
-                        }
-                        var jsonDataTree = TreeData(data, "无");
-                        NodeOperate(jsonDataTree);
-                    }
-                });
-            }
-        }
+       
         //第一次打开检索账户
         function FirstUser() {
             var pd = { "id": "FirstUser" }
@@ -302,100 +118,8 @@
             return true;
         }
     </script>
-    <script>
-        //处理分类为树状图
-        function TreeData(data, parentId) {
-            var itemArr = [];
-            for (var i = 0; i < data.length; i++) {
-                var node = data[i];
-                //data.splice(i, 1)
-                if (node["ParentId"] == parentId) {
-                    var newNode = { Id: node.Id, text: node["text"], color: node.color, icon: node.icon };
-                    for (var j = 0; j < data.length; j++) {
-                        if (data[j].ParentId == node.Id) {
-                            newNode["nodes"] = TreeData(data, node.Id); break;
-                        }
-                    }
-                    itemArr.push(newNode);
-                }
-            }
-            return itemArr;
-        }
-        //节点操作
-        function NodeOperate(jsonDataTree) {
-            //导入分类数据
-            
-            $('#tree').treeview({
-                data: jsonDataTree,         // data is not optionals
-                levels: 1,
-                backColor: 'white',
-                collapseIcon: 'glyphicon glyphicon-chevron-down'
-            });
-            //选中操作
-            $('#tree').on('nodeSelected', function (event, node) {
-                Nodeid = node.Id; NodeText = node.text;
-                IsKind = false;
-                if (node.color != "black") {
-                    IsKind = true; $('#addcode').attr("disabled", false);
-                    $('#addkind').attr("disabled", false);
-                    return;
-                }
-                $('#addcode').attr("disabled", true);
-                $('#addkind').attr("disabled", true);
-                
-                    var pd = { "id": "ShowData", "Name": node.text }
-                    $.ajax({
-                        type: "post",
-                        url: '../Ashx/Handler.ashx',//注意此文件必须与当前文件在同一目录下
-                        data: pd,
-                        dataType: "json",
-                        error: function (textstatus) {
-
-
-                            // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
-                        },
-                        success: function (result) {//result为任意定义的用于装载参数变量
-                            var obj = eval(result);
-                            //alert(decodeURI(obj[0]["Code"]));
-                            frames.contentWindow.setHtml(decodeURI(obj[0]["Code"]));
-                            $('#title').val(obj[0]["Title"]);
-                            NodeAuthor = obj[0]["Author"];
-                            $('#author').html("作者：" + obj[0]["Author"]);
-                        }
-                    });
-               
-            });
-        }
-
-    </script>
-   <!--加载动画-->
-    <style>
-        .loader--spinningDisc {
-            border: solid 0.5em #9b59b6;
-            border-right-color: transparent;
-            border-left-color: transparent;
-            padding: 0.5em;
-            width:5em;
-            height: 5em;
-            border-radius: 50%;
-            background: #3498db;
-            background-clip: content-box;
-            animation: spinDisc 1.5s linear infinite;
-        }
-
-        @keyframes spinDisc {
-            50% {
-                border-top-color: #3498db;
-                border-bottom-color: #3498db;
-                background-color: #2ecc71;
-            }
-
-            100% {
-                transform: rotate(1turn);
-            }
-        }
-
-    </style>
+    
+   
 </head>
 
 <body style="width:100%;" id="body">
@@ -411,31 +135,16 @@
                 <tr>
                     <td style="width:1%"><img src="http://t.cn/RCzsdCq" class="layui-nav-img" /></td>
                     <td id="user" onclick="User()" style="cursor:pointer;width:4%">未登录</td>
-                    <td style="width:10%"><input id="kind" type="text" style="width:100%;height:60%;background-color:transparent;color:aliceblue;border:none" placeholder="分类名称" /></td>
+                    <td style="width:10%"><input id="kind" type="text" style="width:100%;height:60%;background-color:transparent;color:aliceblue;border:none;" placeholder="分类名称" /></td>
                     <td style="width:30%"><input id="title" type="text" style="width:100%;height:60%;text-align:center;color:cornflowerblue;margin-left:1%;background-color: transparent;font-size:130%;border:none" placeholder="代码标题" /></td>
-                    <td style="width:5%"><div><div id="author" style="width:100%;margin-left:15px;height:60%;color:aqua"></div></div></td>
+                    <td style="width:5%"><div><div id="author" style="width:100%;margin-left:15px;height:60%;color:aqua;font-size:90%"></div></div></td>
                 </tr>
             </table>
 
         </li>
     </ul>
-    <table style="width:20%;height:100%;margin-left:1%;float:left">
-        <tr style="width:100%;height:7%">
-            <td style="width:100%;">
-                <button style="width:20%;height:70%;float:left;font-size:85%" id="addcode" onclick="AddData()">添加数据</button>
-                <button style="width:20%;height:70%;float:left;margin-left:3%;font-size:85%" id="addkind" onclick="AddKind()">添加分类</button>
-                <button style="width:20%;height:70%;float:left;margin-left:3%;font-size:85%" onclick="Modify()">修改</button>
-                <button style="width:20%;height:70%;float:left;margin-left:3%;font-size:85%" onclick="Delete()">删除</button>
-            </td>
-        </tr>
-        <tr style="width:100%;height:93%">
-            <td valign="top">
-                <div id="load"><div class='loader loader--spinningDisc'></div></div>
-                <div id="tree" style="width:100%;height:100%;overflow:auto"></div>
-
-            </td>
-        </tr>
-    </table>
-    <iframe id="frame" src="../Frame/tinyMce/editor.html" style="width:78%;float:left;margin-left:1%;height:94%" onclick="Bigger()"></iframe>
+    <iframe id="Kind_f" src="Kind.html" style="width:21%;float:left;height:94%;border:none;margin-top:0.5%;margin-left:0.5%"></iframe>
+    <iframe id="Search_f" src="Search.html" style="width:0;float:left;height:94%;border:none;margin-top:0.5%;"></iframe>
+    <iframe id="frame" src="../Frame/tinyMce/editor.html" style="width:77%;float:left;margin-left:0.5%;height:94%;border:none" onclick="Bigger()"></iframe>
 </body>
 </html>

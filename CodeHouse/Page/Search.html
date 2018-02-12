@@ -1,0 +1,112 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>搜索</title>
+    <script src="../JS/jquery.min.js"></script>
+    <script>
+        var frames;
+        window.onload = function () {
+            frames = window.parent.window.document.getElementById("frame");
+        }
+        function ShowData(e) {
+            var title = $(e).html();
+            title = title.substring(4, title.length - 5);
+            var pd = { "id": "ShowData", "Name": title }
+            $.ajax({
+                type: "post",
+                url: '../Ashx/Handler.ashx',//注意此文件必须与当前文件在同一目录下
+                data: pd,
+                dataType: "json",
+                error: function (textstatus) {
+
+                    alert('数据未找到')
+                },
+                success: function (result) {//result为任意定义的用于装载参数变量
+                    var obj = eval(result);
+                    frames.contentWindow.setHtml(decodeURI(obj[0]["Code"]));
+                    $(window.parent.window.document.getElementById("title")).val(obj[0]["Title"]);
+                    $(window.parent.window.document.getElementById("author")).html("作者：" + obj[0]["Author"]);
+
+                }
+            });
+        }
+        //切换
+        function Shift() {
+            $(window.parent.window.document.getElementById("Kind_f")).css("width", "21%");
+            $(window.parent.window.document.getElementById("Search_f")).css("width", "0");
+        }
+        //搜索标题
+        function Search() {
+            var search = $('#search').val();
+            var pd = { id: "Search", search: search }
+            $.ajax({
+                type: "post",
+                url: '../Ashx/Handler.ashx',//注意此文件必须与当前文件在同一目录下
+                data: pd,
+                dataType: "json",
+                error: function (textstatus) {
+
+                    alert('搜索出错');
+                    // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                },
+                success: function (result) {//result为任意定义的用于装载参数变量
+                    var datanav = eval(result);
+                    if (JSON.stringify(datanav).substr(0, 1) != "[") { alert(datanav.result); return; }
+                    var tb = document.getElementById("search_list");
+                    for (var i = 0; i < datanav.length; i++) {
+                        var row = tb.insertRow(tb.rows.length);
+                        $(row).attr("onclick", "ShowData(this)");
+                        var c1 = row.insertCell(0);
+                        c1.innerHTML = datanav[i].title;
+                    }
+                }
+            });
+        }
+    </script>
+    <style>
+        td{
+            color:black;
+
+        }
+        td:hover {
+            cursor: pointer;
+            color:blue;
+        }
+    </style>
+</head>
+<body style="width:98%;height:100%" id="body">
+    <table style="width:100%;height:100%;margin-left:1%;">
+        <tr style="height:30%">
+            <td style="width:100%;padding-top:1%">
+                <table style="width:100%;height:100%">
+                    <tr style="height:50%">
+                        <td style="width:100%">
+                            <input type="text" id="search" style="width:68%;font-size:85%;float:left" />
+                            <button style="width:25%;float:left;margin-left:3%;font-size:85%" onclick="Search()">搜索</button>
+                        </td>
+                    </tr>
+                    <tr style="height:50%">
+                        <td style="width:100%">
+                            <input type="text" style="width:30%;font-size:85%;float:left" />
+                            <input type="text" style="width:30%;font-size:85%;float:left" />
+                            <button style="width:25%;float:left;margin-left:3%;font-size:85%" onclick="Shift()">切换</button>
+                        </td>
+                    </tr>
+                </table>
+                
+            </td>
+        </tr>
+        <tr style="height:70%">
+            <td valign="top" style="padding-top:2%">
+                <table id="search_list">
+                    <tr>
+                        <td style="color:red;font-size:120%">搜索结果</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+    
+</body>
+</html>
