@@ -2,16 +2,19 @@
 <html>
 <head>
     <meta charset="utf-8" />
+    <meta http-equiv="cache-control" content="max-age=20" >
+    
     <title>IT资源整合</title>
     <script src="../JS/jquery.min.js"></script>
     <script src="../Frame/layui/layui.js"></script>
     <link href="../Frame/layui/css/layui.css" rel="stylesheet" />
+    <script src="MainPage/audio.min.js"></script>
     <script>
-        
+
         var AllNode, layuiIndex;
         var USER;
         window.onload = function () {
-            
+
             $('#body').css("height", document.documentElement.clientHeight * 0.95);
 
             // Layui弹出框引入
@@ -20,7 +23,7 @@
 
                 layer.msg('欢迎进入，专注采集各类IT资源整合');
             });
-            
+
             Initial();
             FirstUser();
         }
@@ -46,7 +49,7 @@
                 }
             });
         }
-       
+
         //第一次打开检索账户
         function FirstUser() {
             var pd = { "id": "FirstUser" }
@@ -118,8 +121,15 @@
             return true;
         }
     </script>
-    
-   
+
+    <script>
+        //音乐播放
+        audiojs.events.ready(function () {
+            audiojs.createAll();
+        });
+    </script>
+
+
 </head>
 
 <body style="width:100%;" id="body">
@@ -130,14 +140,15 @@
         <li class="layui-nav-item">
             <a href="">个人中心<span class="layui-badge-dot"></span></a>
         </li>
-        <li class="layui-nav-item" style="width:80%">
-            <table>
+        <li class="layui-nav-item" style="width:87%">
+            <table style="width:100%">
                 <tr>
-                    <td style="width:1%"><img src="http://t.cn/RCzsdCq" class="layui-nav-img" /></td>
-                    <td id="user" onclick="User()" style="cursor:pointer;width:4%">未登录</td>
-                    <td style="width:10%"><input id="kind" type="text" style="width:100%;height:60%;background-color:transparent;color:aliceblue;border:none;" placeholder="分类名称" /></td>
-                    <td style="width:30%"><input id="title" type="text" style="width:100%;height:60%;text-align:center;color:cornflowerblue;margin-left:1%;background-color: transparent;font-size:130%;border:none" placeholder="代码标题" /></td>
-                    <td style="width:5%"><div><div id="author" style="width:100%;margin-left:15px;height:60%;color:aqua;font-size:90%"></div></div></td>
+                    <td style="width:2%"><img src="http://t.cn/RCzsdCq" class="layui-nav-img" /></td>
+                    <td id="user" onclick="User()" style="cursor:pointer;width:5%">未登录</td>
+                    <td style="width:15%;padding-left:5%"><input id="kind" type="text" style="width:100%;height:60%;background-color:transparent;color:aliceblue;border:none;" placeholder="分类名称" /></td>
+                    <td style="width:40%"><input id="title" type="text" style="width:100%;height:60%;text-align:center;color:cornflowerblue;background-color: transparent;font-size:130%;border:none" placeholder="代码标题" /></td>
+                    <td style="width:10%;padding-left:2%"><div><div id="author" style="width:100%;height:60%;color:aqua;font-size:90%"></div></div></td>
+                    <td style="width:5%;padding-left:5%"><audio src="MainPage/逍遥叹.mp3" preload="auto"></audio></td>
                 </tr>
             </table>
 

@@ -101,8 +101,17 @@
         //修改
         function Modify() {
             if (Nodeid == null) { return; }
+            var Old_AllNode = JSON.stringify(AllNode);
             if (IsKind) {
                 var name = $(window.parent.window.document.getElementById("kind")).val();
+                
+                for (var i = 0; i < AllNode.length; i++) {
+                    if (AllNode[i]["Id"] == Nodeid) {
+                        AllNode[i]["text"] = name;
+                        var data = TreeData(AllNode, "无");
+                        NodeOperate(data); break;
+                    }
+                }
                 var pd = { "id": "ModifyKind", "Name": name, "Key": Nodeid }
                 $.ajax({
                     type: "post",
@@ -110,25 +119,28 @@
                     data: pd,
                     dataType: "json",
                     error: function (textstatus) {
-
+                        AllNode = JSON.parse(Old_AllNode);
+                        var data = TreeData(AllNode, "无");
+                        NodeOperate(data);
                         alert('修改分类出错');
                         // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
                     },
                     success: function (result) {//result为任意定义的用于装载参数变量
                         var obj = eval(result);
                         
-                        for (var i = 0; i < AllNode.length; i++) {
-                            if (AllNode[i]["Id"] == Nodeid) {
-                                AllNode[i]["text"] = name;
-                                var data = TreeData(AllNode, "无");
-                                NodeOperate(data); break;
-                            }
-                        }
+                        
                     }
                 });
             } else {
                 if (window.parent.USER != NodeAuthor) { alert("不能修改非本账户代码数据"); return; }
                 var title = $(window.parent.window.document.getElementById("title")).val(), Code = encodeURI(frames.contentWindow.getHtml());
+                for (var i = 0; i < AllNode.length; i++) {
+                    if (AllNode[i]["Id"] == Nodeid) {
+                        AllNode[i]["text"] = title;
+                        var data = TreeData(AllNode, "无");
+                        NodeOperate(data); break;
+                    }
+                }
                 var pd = { "id": "ModifyCode", "Title": title, "Code": Code, "Key": Nodeid, "OldTitle": NodeText }
                 $.ajax({
                     type: "post",
@@ -142,13 +154,11 @@
                     },
                     success: function (result) {//result为任意定义的用于装载参数变量
                         var obj = eval(result);
-                        if ((obj.result + "").substr(0, 2) == "出错") alert(obj.result);
-                        for (var i = 0; i < AllNode.length; i++) {
-                            if (AllNode[i]["Id"] == Nodeid) {
-                                AllNode[i]["text"] = title;
-                                var data = TreeData(AllNode, "无");
-                                NodeOperate(data); break;
-                            }
+                       if ((obj.result + "").substr(0, 2) == "出错") {
+                           alert(obj.result);
+                           AllNode = JSON.parse(Old_AllNode);
+                           var data = TreeData(AllNode, "无");
+                            NodeOperate(data); 
                         }
                     }
                 });
@@ -157,7 +167,7 @@
         //删除
         function Delete() {
             if (Nodeid == null) { return; }
-
+            var Old_AllNode = JSON.stringify(AllNode);
             if (IsKind) {
                 var pd = { "id": "DeleteKind", "Key": Nodeid }
                 $.ajax({

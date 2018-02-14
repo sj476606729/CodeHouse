@@ -4,7 +4,7 @@ using System.Web;
 using Newtonsoft.Json;
 using System.Data.SqlClient;
 using System.Data;
-
+using System.Linq;
 using Bmob_space;
 using cn.bmob.api;
 using cn.bmob.io;
@@ -16,8 +16,9 @@ namespace Operate
  
     //操作类
     public class Operation: BmobDatabaseHand
-    { 
-        
+    {
+        public static DataTable Code_Data;
+        public static DataTable Kind_Data;
         /// <summary>
         /// Json序列化所有分类
         /// </summary>
@@ -312,6 +313,8 @@ namespace Operate
         {
             try
             {
+                var query = from r in Operation.Code_Data.AsEnumerable() where r.Field<string>("Title") == Title select r;
+                if(query.Count<DataRow>()>0) { return "出错,已存在该标题"; }
                 CodeModel codeModel = new CodeModel("Code_tb");
                 codeModel.Title = Title;
                 codeModel.Code = Code;
@@ -319,12 +322,19 @@ namespace Operate
                 var future = Bmob.CreateTaskAsync(codeModel);
                 if (future.Result.objectId.Length>0)
                 {
+                    DataRow row = Operation.Code_Data.NewRow();
+                    row["Title"] = Title;row["Code"] = Code;row["Author"] = Author; row["ObjectId"] = future.Result.objectId;
+                    Operation.Code_Data.Rows.Add(row);
                     KindModel kindModel = new KindModel("Kind_tb");
                     kindModel.ParentId = Kind;
                     kindModel.Name = Title;
                     var future1 = Bmob.CreateTaskAsync(kindModel);
                     if (future1.Result.objectId.Length > 0)
                     {
+                        DataRow row_ = Operation.Kind_Data.NewRow();
+                        row_["ID"] = future1.Result.objectId;row_["ParentId"] = Kind;row_["Name"] = Title;
+                        
+                        Operation.Kind_Data.Rows.Add(row_);
                         return future1.Result.objectId;
                     }
                     else return "出错,添加代码成功,添加标题失败";
@@ -332,7 +342,7 @@ namespace Operate
                 else return "出错,添加代码失败";
             }catch(Exception e)
             {
-                return "出错,已存在该标题";
+                return "出错,"+e.Message;
             }
             
 
@@ -353,11 +363,17 @@ namespace Operate
             var future = Bmob.FindTaskAsync<KindModel>("Kind_tb", query);
             if (future.Result.results.Count == 0)
             {
+                
                 KindModel kindModel = new KindModel("Kind_tb");
                 kindModel.ParentId = ParentId;
                 kindModel.Name = Name;
                 var future1 = Bmob.CreateTaskAsync(kindModel);
-                if (future1.Result.objectId.Length > 0) { return future1.Result.objectId; } else return "添加失败";
+                if (future1.Result.objectId.Length > 0) {
+                    DataRow row = Operation.Kind_Data.NewRow();
+                    row["ID"] = future1.Result.objectId;row["ParentId"] = ParentId;row["Name"] = Name;
+                    Operation.Kind_Data.Rows.Add(row);
+                    return future1.Result.objectId;
+                } else return "添加失败";
             }
             else return "已存在该分类";
         }
@@ -367,26 +383,33 @@ namespace Operate
         /// <returns></returns>
         public DataTable GetAllKind()
         {
-            var query = new BmobQuery();
-            query.Limit(500);
-            var future = Bmob.FindTaskAsync<KindModel>("Kind_tb", query);
-            DataTable table = new DataTable();
-            table.Columns.Add(new DataColumn("ID",typeof(string)));
-            table.Columns.Add(new DataColumn("ParentId", typeof(string)));
-            table.Columns.Add(new DataColumn("Name", typeof(string)));
-            if(future.Result is IBmobWritable)
+            if (Operation.Kind_Data == null)
             {
-                int i = 0;
-                foreach(object data in future.Result.results)
+                var query = new BmobQuery();
+                query.Limit(500);
+                var future = Bmob.FindTaskAsync<KindModel>("Kind_tb", query);
+                DataTable table = new DataTable();
+                table.Columns.Add(new DataColumn("ID", typeof(string)));
+                table.Columns.Add(new DataColumn("ParentId", typeof(string)));
+                table.Columns.Add(new DataColumn("Name", typeof(string)));
+                if (future.Result is IBmobWritable)
                 {
-                    DataRow row = table.NewRow();
-                    row["ID"] = future.Result.results[i].objectId;
-                    row["ParentId"] = future.Result.results[i].ParentId;
-                    row["Name"] = future.Result.results[i].Name;
-                    table.Rows.Add(row);i++;
+                    int i = 0;
+                    foreach (object data in future.Result.results)
+                    {
+                        DataRow row = table.NewRow();
+                        row["ID"] = future.Result.results[i].objectId;
+                        row["ParentId"] = future.Result.results[i].ParentId;
+                        row["Name"] = future.Result.results[i].Name;
+                        table.Rows.Add(row); i++;
+                    }
                 }
+                Operation.Kind_Data = table;
+                return table;
             }
-            return table; ;
+            else { return Operation.Kind_Data; }
+            
+            
         }
         /// <summary>
         /// 获取所有代码数据
@@ -394,26 +417,34 @@ namespace Operate
         /// <returns></returns>
         public DataTable GetAllCode()
         {
-            var query = new BmobQuery();
-            query.Limit(500);
-            var future = Bmob.FindTaskAsync<CodeModel>("Code_tb", query);
-            DataTable table = new DataTable();
-            table.Columns.Add(new DataColumn("Title", typeof(string)));
-            table.Columns.Add(new DataColumn("Code", typeof(string)));
-            table.Columns.Add(new DataColumn("Author", typeof(string)));
-            if(future.Result is IBmobWritable)
+            if (Operation.Code_Data == null)
             {
-                int i = 0;
-                foreach(object data in future.Result.results)
+                var query = new BmobQuery();
+                query.Limit(500);
+                var future = Bmob.FindTaskAsync<CodeModel>("Code_tb", query);
+                DataTable table = new DataTable();
+                table.Columns.Add(new DataColumn("ObjectId", typeof(string)));
+                table.Columns.Add(new DataColumn("Title", typeof(string)));
+                table.Columns.Add(new DataColumn("Code", typeof(string)));
+                table.Columns.Add(new DataColumn("Author", typeof(string)));
+                if (future.Result is IBmobWritable)
                 {
-                    DataRow row = table.NewRow();
-                    row["Title"] = future.Result.results[i].Title;
-                    row["Code"] = future.Result.results[i].Code;
-                    row["Author"] = future.Result.results[i].Author;
-                    table.Rows.Add(row);i++;
+                    int i = 0;
+                    foreach (object data in future.Result.results)
+                    {
+                        DataRow row = table.NewRow();
+                        row["ObjectId"] = future.Result.results[i].objectId;
+                        row["Title"] = future.Result.results[i].Title;
+                        row["Code"] = future.Result.results[i].Code;
+                        row["Author"] = future.Result.results[i].Author;
+                        table.Rows.Add(row); i++;
+                    }
                 }
+                Operation.Code_Data = table;
+                return table;
             }
-            return table;
+            else return Operation.Code_Data;
+            
         }
         /// <summary>
         /// 获得代码数据
@@ -421,22 +452,38 @@ namespace Operate
         /// <param name="Name"></param>
         public string GetCode(string Name)
         {
-            BmobQuery query = new BmobQuery();
-            query.WhereEqualTo("Title", Name);
-            var future = Bmob.FindTaskAsync<CodeModel>("Code_tb", query);
             List<Code_Model> list = new List<Code_Model>();
-            if (future.Result is IBmobWritable)
+            if (Operation.Code_Data == null)
             {
-                list.Add(new Code_Model()
+                BmobQuery query = new BmobQuery();
+                query.WhereEqualTo("Title", Name);
+                var future = Bmob.FindTaskAsync<CodeModel>("Code_tb", query);
+                
+                if (future.Result is IBmobWritable)
                 {
-                    Title = future.Result.results[0].Title,
-                    Code = future.Result.results[0].Code,
-                    Author = future.Result.results[0].Author
-                });
+                    list.Add(new Code_Model()
+                    {
+                        Title = future.Result.results[0].Title,
+                        Code = future.Result.results[0].Code,
+                        Author = future.Result.results[0].Author
+                    });
+                    string JsonData = JsonConvert.SerializeObject(list);
+                    return JsonData;
+                }
+                else { return null; }
+            }
+            else
+            {
+                var query = from r in Operation.Code_Data.AsEnumerable() where r.Field<string>("Title")==Name select r;
+                    list.Add(new Code_Model()
+                    {
+                        Title=query.First().Field<string>("Title"),
+                        Code = query.First().Field<string>("Code"),Author = query.First().Field<string>("Author")
+                    });
                 string JsonData = JsonConvert.SerializeObject(list);
                 return JsonData;
             }
-            else { return null; }
+            
 
         }
         /// <summary>
@@ -453,20 +500,19 @@ namespace Operate
             {
                 ParentId = future1.Result.ParentId;
             }
-            var query = new BmobQuery();
-            query.WhereContainedIn<string>("ParentId", ParentId);
-            query.WhereContainedIn<string>("Name", Name);
-            var future2 = Bmob.FindTaskAsync<KindModel>("Kind_tb", query);
-            if(future2.Result is IBmobWritable)
-            {
-                if (future2.Result.results.Count > 0) { return false; }
-            }
+            var linq = from r in Operation.Kind_Data.AsEnumerable() where r.Field<string>("ParentId") == ParentId && r.Field<string>("Name") == Name select r;
+            if (linq.Count<DataRow>() > 0) { return false; }
             KindModel kindModel = new KindModel("Kind_tb");
             kindModel.objectId = Id;
             kindModel.Name = Name;
             var future = Bmob.UpdateTaskAsync<KindModel>(kindModel);
             if (future.Result is IBmobWritable)
             {
+                linq = from r in Operation.Kind_Data.AsEnumerable() where r.Field<string>("Id") == Id select r;
+                foreach(var data in Operation.Kind_Data.AsEnumerable())
+                {
+                    data.SetField<string>("Name", Name);
+                }
                 return true;
             }
             else return false;
@@ -481,14 +527,10 @@ namespace Operate
         /// <returns></returns>
         public string ModifyCode(string Title, string Code, string Id,string OldTitle)
         {
-            var query = new BmobQuery();
-            query.WhereContainedIn<string>("Title", OldTitle);
-            var future = Bmob.FindTaskAsync<CodeModel>("Code_tb", query);
-            string Objectid="";
-            if(future.Result is IBmobWritable)
-            {
-                Objectid = future.Result.results[0].objectId;
-            }
+            var linq = from r in Operation.Code_Data.AsEnumerable() where r.Field<string>("Title") == Title select r;
+            if (linq.Count<DataRow>() > 0) { return "出错,此标题已添加"; }
+            linq = from r in Operation.Code_Data.AsEnumerable() where r.Field<string>("Title") == OldTitle select r;
+            string Objectid = linq.First().Field<string>("ObjectId");
             CodeModel codeModel = new CodeModel("Code_tb");
             codeModel.objectId = Objectid;
             codeModel.Title = Title;
@@ -496,11 +538,26 @@ namespace Operate
             var future1 = Bmob.UpdateTaskAsync<CodeModel>(codeModel);
             if (future1.Result is IBmobWritable)
             {
+                linq = from r in Operation.Code_Data.AsEnumerable() where r.Field<string>("Title") == OldTitle select r;
+                foreach(var data in linq)
+                {
+                    data.SetField<string>("Title", Title);
+                    data.SetField<string>("Code", Code);
+                }
                 KindModel kindModel = new KindModel("Kind_tb");
                 kindModel.objectId = Id;
                 kindModel.Name = Title;
                 future1 = Bmob.UpdateTaskAsync<KindModel>(kindModel);
-                if (future1.Result is IBmobWritable) return "成功"; else return "出错,修改代码数据成功，修改标题失败";
+                if (future1.Result is IBmobWritable)
+                {
+                    linq = from r in Operation.Kind_Data.AsEnumerable() where r.Field<string>("Id") == Id select r;
+                    foreach(var data in linq)
+                    {
+                        data.SetField<string>("Name", Title);
+                    }
+                    return "成功";
+                }
+                else {return "出错,修改代码数据成功，修改标题失败"; }
             }
             else return "出错,修改i代码数据失败";
         }
@@ -511,18 +568,24 @@ namespace Operate
         /// <returns></returns>
         public string DeleteKind(string Id)
         {
-            var query = new BmobQuery();
-            query.WhereContainedIn<string>("ParentId", Id);
-            var future = Bmob.FindTaskAsync<CodeModel>("Kind_tb", query);
-            if(future.Result is IBmobWritable)
+            var linq = from r in Operation.Kind_Data.AsEnumerable() where r.Field<string>("ParentId") == Id select r;
+            if (linq.Count<DataRow>() > 0)
             {
-                if (future.Result.results.Count > 0)
-                {
-                    return "出错,该分类包含子项,删除失败";
-                }
+                return "出错,该分类存在子分类";
             }
             var future1 = Bmob.DeleteTaskAsync("Kind_tb", Id);
-            if (future1.Result is IBmobWritable) return "删除成功"; else return "出错,删除分类失败";
+            if (future1.Result is IBmobWritable)
+            {
+                foreach (DataRow row in Operation.Kind_Data.Rows)
+                {
+                    if (row["Id"].ToString() == Id)
+                    {
+                        Operation.Kind_Data.Rows.Remove(row); break;
+                    }
+                }
+                return "删除成功";
+            }
+            else return "出错,删除分类失败";
 
         }
         /// <summary>
@@ -532,19 +595,31 @@ namespace Operate
         /// <returns></returns>
         public string DeleteCode(string Id, string Title)
         {
-            var query = new BmobQuery();
-            query.WhereContainedIn<string>("Title", Title);
-            var future = Bmob.FindTaskAsync<CodeModel>("Code_tb", query);
-            string Objectid = "";
-            if (future.Result is IBmobWritable)
-            {
-                Objectid = future.Result.results[0].objectId;
-            }
+            var linq = from r in Operation.Code_Data.AsEnumerable() where r.Field<string>("Title") == Title select r;
+            string Objectid = linq.First().Field<string>("ObjectId") ;
             var future1 = Bmob.DeleteTaskAsync("Code_tb", Objectid);
             if (future1.Result is IBmobWritable)
             {
+                foreach (DataRow row in Operation.Code_Data.Rows)
+                {
+                    if (row["Title"].ToString() == Title)
+                    {
+                        Operation.Code_Data.Rows.Remove(row); break;
+                    }
+                }
                 future1 = Bmob.DeleteTaskAsync("Kind_tb", Id);
-                if (future1.Result is IBmobWritable) return "删除成功"; else return "出错,删除代码数据成功，删除标题失败";
+                if (future1.Result is IBmobWritable)
+                {
+                    foreach(DataRow row in Operation.Kind_Data.Rows)
+                    {
+                        if (row["Id"].ToString() == Id)
+                        {
+                            Operation.Kind_Data.Rows.Remove(row);break;
+                        }
+                    }
+                    return "删除成功";
+                }
+                else return "出错,删除代码数据成功，删除标题失败";
             }
             else return "出错,删除代码数据失败";
         }
@@ -559,6 +634,7 @@ namespace Operate
     }
     public class Code_Model
     {
+        public string ObjectId { get; set; }
         public string Title { get; set; }
         public string Code { get; set; }
         public string Author { get; set; }
