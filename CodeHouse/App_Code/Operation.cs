@@ -623,6 +623,38 @@ namespace Operate
             }
             else return "出错,删除代码数据失败";
         }
+        /// <summary>
+        /// 移动分类
+        /// </summary>
+        /// <param name="Node"></param>
+        /// <param name="NewNode"></param>
+        /// <returns></returns>
+        public string MoveKind(string Node,string NewNode)
+        {
+            try
+            {
+                KindModel kindModel = new KindModel("Kind_tb");
+                kindModel.objectId = Node;
+                kindModel.ParentId = NewNode;
+                var future = Bmob.UpdateTaskAsync<KindModel>(kindModel);
+                if (future.Result is IBmobWritable)
+                {
+                    var linq = from r in Operation.Kind_Data.AsEnumerable() where r.Field<string>("Id") == Node select r;
+                    foreach(var data in linq)
+                    {
+                        data.SetField<string>("ParentId", NewNode);
+                    }
+                
+            }
+                return "移动成功";
+            }
+            catch (Exception e)
+            {
+                return e.Message;
+            }
+            
+            
+        }
     }
     public class Kind_Model
     {

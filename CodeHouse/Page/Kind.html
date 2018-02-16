@@ -9,10 +9,11 @@
 
     <script>
         var Nodeid, NodeText, IsKind = false;
-        var AllNode;
+        var AllNode,node_move;
         var frames, NodeAuthor;
         window.onload = function () {
             frames = window.parent.window.document.getElementById("frame");
+            
             initial();
         }
         //初始化
@@ -226,6 +227,52 @@
                 });
             }
         }
+        //移动
+        function Move(e) {
+            if (Nodeid == null) { return; }
+            var  new_node;
+            var node_text, node_newtext;
+            if ($('#move').html() == "移动") {
+                node_move = Nodeid; $('#move').html('选择分类');
+                node_text = NodeText;
+            } else if ($('#move').html() == "选择分类") {
+                if (IsKind == false) { alert('请选择分类'); return; }
+                new_node = Nodeid; node_newtext = NodeText;
+                if (confirm("确定将(" + node_text + ")移动到(" + node_newtext + ")分类中吗?") == true) {
+                    var old_AllNode = JSON.stringify(AllNode);
+                    for (var i = 0; i < AllNode.length; i++){
+                        if (AllNode[i]["Id"] == node_move) {
+                            AllNode[i]["ParentId"] = new_node;
+                            var data = TreeData(AllNode, "无");
+                            NodeOperate(data); $('#move').html('移动');
+                            var pd = { id: "MoveKind", node: node_move, newnode: new_node }
+                            $.ajax({
+                                type: "post",
+                                url: '../Ashx/Handler.ashx',//注意此文件必须与当前文件在同一目录下
+                                data: pd,
+                                dataType: "json",
+                                error: function (textstatus) {
+
+                                    alert('移动返回出错');
+                                    // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                                },
+                                success: function (result) {//result为任意定义的用于装载参数变量
+                                    var obj = eval(result);
+                                    if (obj.result != "移动成功") {
+                                        alert(obj.result);
+                                        AllNode = JSON.parse(old_AllNode);
+                                        var data = TreeData(AllNode, "无");
+                                        NodeOperate(data); $('#move').html('移动');
+                                    }
+                                }
+                            });
+                        }
+                    }
+                }
+            }
+            
+
+        }
         //切换搜索
         function Shift() {
             $(window.parent.window.document.getElementById("Kind_f")).css("width", "0");
@@ -328,7 +375,7 @@
 </head>
 <body style="width:98%;height:100%" id="body">
     <table style="width:100%;height:100%;margin-left:1%;">
-        <tr style="height:30%">
+        <tr style="height:15%">
             <td style="width:100%;padding-top:1%">
                 <button style="width:20%; float:left;font-size:85%" id="addcode" onclick="AddData()">添加数据</button>
                 <button style="width:20%;float:left;margin-left:1%;font-size:85%" id="addkind" onclick="AddKind()">添加分类</button>
@@ -337,6 +384,11 @@
                 <button style="width:15%;float:left;margin-left:1%;font-size:85%" onclick="Shift()" >切换</button>
             </td>
         </tr>
+       <tr style="height:15%">
+           <td style="width:100%;padding-top:1%">
+               <button style="width:90%;" id="move" onclick="Move(this)">移动</button>
+           </td>
+       </tr>
         <tr style="height:70%">
             <td valign="top" style="padding-top:2%">
                 <div id="load" style="height:20%"><div class='loader loader--spinningDisc'></div></div>

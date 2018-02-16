@@ -62,8 +62,10 @@ public class Handler : IHttpHandler,IRequiresSessionState{
             case "Search":
                 result_str = searchOperate.SearchTitle(HttpContext.Current.Request.Form["search"]);
                 if (result_str.Substring(0, 1) != "[") { context.Response.Write("{\"result\":\"" + result_str + "\"}"); }else { context.Response.Write(result_str);}
-
                 break;
+            case "MoveKind":
+                result_str = operation.MoveKind(HttpContext.Current.Request.Form["node"], HttpContext.Current.Request.Form["newnode"]);
+                context.Response.Write("{\"result\":\"" + result_str + "\"}");break;
         }
     }
 

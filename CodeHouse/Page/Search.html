@@ -54,6 +54,7 @@
                     var datanav = eval(result);
                     if (JSON.stringify(datanav).substr(0, 1) != "[") { alert(datanav.result); return; }
                     var tb = document.getElementById("search_list");
+                    $('#search_list').html('');
                     for (var i = 0; i < datanav.length; i++) {
                         var row = tb.insertRow(tb.rows.length);
                         $(row).attr("onclick", "ShowData(this)");
@@ -100,9 +101,7 @@
         <tr style="height:70%">
             <td valign="top" style="padding-top:2%">
                 <table id="search_list">
-                    <tr>
-                        <td style="color:red;font-size:120%">搜索结果</td>
-                    </tr>
+
                 </table>
             </td>
         </tr>

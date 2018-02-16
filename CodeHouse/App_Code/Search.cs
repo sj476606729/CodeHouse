@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Bmob_space;
 using cn.bmob.io;
+using System.Data;
 
 namespace Search
 {
@@ -16,32 +17,24 @@ namespace Search
         public string SearchTitle(string Title)
         {
             Util util = Util.Instance;
-            BmobQuery query = new BmobQuery();
-            query.Limit(500);
-            var future = Bmob.FindTaskAsync<CodeModel>("Code_tb", query);
             ArrayList list = new ArrayList();
             ArrayList result = new ArrayList();
-            if (future.Result.results.Count > 0)
+            foreach(DataRow row in Operate.Operation.Code_Data.Rows)
             {
-                for (int i = 0; i < future.Result.results.Count; i++)
-                {
-                    list.Add(future.Result.results[i].Title);
-                }
-                result = util.paixu(list, Title);
-                if (result.Count > 0)
-                {
-                    string json = "[";
-                    foreach (object data in result)
-                    {
-                        json += "{\"title\":\"" + data.ToString() + "\"},";
-                    }
-                    json =json.Substring(0,json.Length-1)+ "]";
-                    return json;
-                }
-                else  return "未搜到信息";
-
+                list.Add(row["Title"]);
             }
-            else return "获取标题数据失败";
+            result = util.paixu(list, Title);
+            if (result.Count > 0)
+            {
+                string json = "[";
+                foreach (object data in result)
+                {
+                    json += "{\"title\":\"" + data.ToString() + "\"},";
+                }
+                json =json.Substring(0,json.Length-1)+ "]";
+                return json;
+            }
+            else  return "未搜到信息";
             
             
         }
