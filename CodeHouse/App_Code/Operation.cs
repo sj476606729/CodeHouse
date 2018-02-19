@@ -8,6 +8,7 @@ using System.Linq;
 using Bmob_space;
 using cn.bmob.api;
 using cn.bmob.io;
+using System.Web.SessionState;
 /// <summary>
 /// Operation 的摘要说明
 /// </summary>
@@ -17,6 +18,7 @@ namespace Operate
     //操作类
     public class Operation: BmobDatabaseHand
     {
+        
         public static DataTable Code_Data;
         public static DataTable Kind_Data;
         /// <summary>
@@ -297,7 +299,7 @@ namespace Operate
         }
     }*/
     //比目数据库处理类
-    public class BmobDatabaseHand
+    public class BmobDatabaseHand: IRequiresSessionState
     {
         BmobWindows Bmob= new BmobWindows();
         Bmob_Initial initial = Bmob_Initial.Initial();
@@ -325,6 +327,7 @@ namespace Operate
                     DataRow row = Operation.Code_Data.NewRow();
                     row["Title"] = Title;row["Code"] = Code;row["Author"] = Author; row["ObjectId"] = future.Result.objectId;
                     Operation.Code_Data.Rows.Add(row);
+                    DataSynchronous("Code_tb");
                     KindModel kindModel = new KindModel("Kind_tb");
                     kindModel.ParentId = Kind;
                     kindModel.Name = Title;
@@ -335,6 +338,7 @@ namespace Operate
                         row_["ID"] = future1.Result.objectId;row_["ParentId"] = Kind;row_["Name"] = Title;
                         
                         Operation.Kind_Data.Rows.Add(row_);
+                        DataSynchronous("Kind_tb");
                         return future1.Result.objectId;
                     }
                     else return "出错,添加代码成功,添加标题失败";
@@ -372,6 +376,7 @@ namespace Operate
                     DataRow row = Operation.Kind_Data.NewRow();
                     row["ID"] = future1.Result.objectId;row["ParentId"] = ParentId;row["Name"] = Name;
                     Operation.Kind_Data.Rows.Add(row);
+                    DataSynchronous("Kind_tb");
                     return future1.Result.objectId;
                 } else return "添加失败";
             }
@@ -383,7 +388,7 @@ namespace Operate
         /// <returns></returns>
         public DataTable GetAllKind()
         {
-            if (Operation.Kind_Data == null)
+            if (HttpContext.Current.Application["Kind_tb"] == null)
             {
                 var query = new BmobQuery();
                 query.Limit(500);
@@ -405,9 +410,10 @@ namespace Operate
                     }
                 }
                 Operation.Kind_Data = table;
+                DataSynchronous("Kind_tb");
                 return table;
             }
-            else { return Operation.Kind_Data; }
+            else { Operation.Kind_Data = (DataTable)HttpContext.Current.Application["Kind_tb"]; return Operation.Kind_Data; }
             
             
         }
@@ -417,7 +423,7 @@ namespace Operate
         /// <returns></returns>
         public DataTable GetAllCode()
         {
-            if (Operation.Code_Data == null)
+            if (HttpContext.Current.Application["Code_tb"] == null)
             {
                 var query = new BmobQuery();
                 query.Limit(500);
@@ -441,9 +447,10 @@ namespace Operate
                     }
                 }
                 Operation.Code_Data = table;
+                DataSynchronous("Code_tb");
                 return table;
             }
-            else return Operation.Code_Data;
+            else { Operation.Code_Data =(DataTable)HttpContext.Current.Application["Code_tb"]; return Operation.Code_Data; }
             
         }
         /// <summary>
@@ -513,6 +520,7 @@ namespace Operate
                 {
                     data.SetField<string>("Name", Name);
                 }
+                DataSynchronous("Kind_tb");
                 return true;
             }
             else return false;
@@ -544,6 +552,7 @@ namespace Operate
                     data.SetField<string>("Title", Title);
                     data.SetField<string>("Code", Code);
                 }
+                DataSynchronous("Code_tb");
                 KindModel kindModel = new KindModel("Kind_tb");
                 kindModel.objectId = Id;
                 kindModel.Name = Title;
@@ -555,6 +564,7 @@ namespace Operate
                     {
                         data.SetField<string>("Name", Title);
                     }
+                    DataSynchronous("Kind_tb");
                     return "成功";
                 }
                 else {return "出错,修改代码数据成功，修改标题失败"; }
@@ -583,6 +593,7 @@ namespace Operate
                         Operation.Kind_Data.Rows.Remove(row); break;
                     }
                 }
+                DataSynchronous("Kind_tb");
                 return "删除成功";
             }
             else return "出错,删除分类失败";
@@ -607,6 +618,7 @@ namespace Operate
                         Operation.Code_Data.Rows.Remove(row); break;
                     }
                 }
+                DataSynchronous("Code_tb");
                 future1 = Bmob.DeleteTaskAsync("Kind_tb", Id);
                 if (future1.Result is IBmobWritable)
                 {
@@ -617,6 +629,7 @@ namespace Operate
                             Operation.Kind_Data.Rows.Remove(row);break;
                         }
                     }
+                    DataSynchronous("Kind_tb");
                     return "删除成功";
                 }
                 else return "出错,删除代码数据成功，删除标题失败";
@@ -645,7 +658,8 @@ namespace Operate
                         data.SetField<string>("ParentId", NewNode);
                     }
                 
-            }
+                }
+                DataSynchronous("Kind_tb");
                 return "移动成功";
             }
             catch (Exception e)
@@ -654,6 +668,16 @@ namespace Operate
             }
             
             
+        }
+        /// <summary>
+        /// 数据同步到服务器
+        /// </summary>
+        /// <param name="select"></param>
+        private void DataSynchronous(string select)
+        {
+            HttpContext.Current.Application.Lock();
+            if (select == "Kind_tb") { HttpContext.Current.Application["Kind_tb"] = Operation.Kind_Data; } else { HttpContext.Current.Application["Code_tb"] = Operation.Code_Data; }
+            HttpContext.Current.Application.UnLock();
         }
     }
     public class Kind_Model

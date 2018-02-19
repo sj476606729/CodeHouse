@@ -4,6 +4,8 @@
     <meta charset="utf-8" />
     <title>搜索</title>
     <script src="../JS/jquery.min.js"></script>
+    <script src="../Frame/bootstrap/js/bootstrap.min.js"></script>
+    <link href="../Frame/bootstrap/css/bootstrap.css" rel="stylesheet" />
     <script>
         var frames;
         window.onload = function () {
@@ -84,14 +86,14 @@
                     <tr style="height:50%">
                         <td style="width:100%">
                             <input type="text" id="search" style="width:68%;font-size:85%;float:left" />
-                            <button style="width:25%;float:left;margin-left:3%;font-size:85%" onclick="Search()">搜索</button>
+                            <button style="width:25%;float:left;margin-left:3%;font-size:85%"class="btn btn-default" onclick="Search()">搜索</button>
                         </td>
                     </tr>
                     <tr style="height:50%">
                         <td style="width:100%">
                             <input type="text" style="width:30%;font-size:85%;float:left" />
                             <input type="text" style="width:30%;font-size:85%;float:left" />
-                            <button style="width:25%;float:left;margin-left:3%;font-size:85%" onclick="Shift()">切换</button>
+                            <button style="width:25%;float:left;margin-left:3%;font-size:85%" class="btn btn-default" onclick="Shift()">切换</button>
                         </td>
                     </tr>
                 </table>

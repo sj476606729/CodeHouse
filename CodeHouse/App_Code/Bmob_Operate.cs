@@ -44,6 +44,7 @@ namespace Bmob_space
             // TODO: 在此处添加构造函数逻辑
             //
         }
+        
     }
     //代码数据模型
     public class CodeModel : BmobTable

@@ -6,6 +6,7 @@
     <link href="../Frame/bootstrap/css/bootstrap.css" rel="stylesheet">
     <script src="../JS/jquery.min.js"></script>
     <script src="../Frame/bootstrap/js/bootstrap-treeview.js"></script>
+    <script src="../Frame/bootstrap/js/bootstrap.min.js"></script>
 
     <script>
         var Nodeid, NodeText, IsKind = false;
@@ -376,17 +377,17 @@
 <body style="width:98%;height:100%" id="body">
     <table style="width:100%;height:100%;margin-left:1%;">
         <tr style="height:15%">
-            <td style="width:100%;padding-top:1%">
-                <button style="width:20%; float:left;font-size:85%" id="addcode" onclick="AddData()">添加数据</button>
-                <button style="width:20%;float:left;margin-left:1%;font-size:85%" id="addkind" onclick="AddKind()">添加分类</button>
-                <button style="width:20%;float:left;margin-left:1%;font-size:85%" onclick="Modify()">修改</button>
-                <button style="width:20%;float:left;margin-left:1%;font-size:85%" onclick="Delete()">删除</button>
-                <button style="width:15%;float:left;margin-left:1%;font-size:85%" onclick="Shift()" >切换</button>
+            <td style="width:100%;padding-top:1%" class="btn-group">
+                <button style="width:23%; float:left;font-size:85%"class="btn btn-default" id="addcode" onclick="AddData()">添加数据</button>
+                <button style="width:23%;float:left;font-size:85%"class="btn btn-default" id="addkind" onclick="AddKind()">添加分类</button>
+                <button style="width:19%;float:left;font-size:85%"class="btn btn-default" onclick="Modify()">修改</button>
+                <button style="width:19%;float:left;font-size:85%"class="btn btn-default" onclick="Delete()">删除</button>
+                <button style="width:15%;float:left;font-size:85%"class="btn btn-default" onclick="Shift()" >切换</button>
             </td>
         </tr>
        <tr style="height:15%">
            <td style="width:100%;padding-top:1%">
-               <button style="width:90%;" id="move" onclick="Move(this)">移动</button>
+               <button style="width:98%;" id="move" class="btn btn-default" onclick="Move(this)">移动</button>
            </td>
        </tr>
         <tr style="height:70%">

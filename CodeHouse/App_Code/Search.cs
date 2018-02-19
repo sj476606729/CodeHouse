@@ -19,6 +19,7 @@ namespace Search
             Util util = Util.Instance;
             ArrayList list = new ArrayList();
             ArrayList result = new ArrayList();
+            if (Operate.Operation.Code_Data == null) { return "还未初始化，请等待"; }
             foreach(DataRow row in Operate.Operation.Code_Data.Rows)
             {
                 list.Add(row["Title"]);
