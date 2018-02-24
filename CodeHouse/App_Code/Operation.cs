@@ -18,7 +18,6 @@ namespace Operate
     //操作类
     public class Operation: BmobDatabaseHand
     {
-        
         public static DataTable Code_Data;
         public static DataTable Kind_Data;
         /// <summary>
