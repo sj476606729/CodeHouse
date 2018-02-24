@@ -535,9 +535,12 @@ namespace Operate
         /// <returns></returns>
         public string ModifyCode(string Title, string Code, string Id,string OldTitle)
         {
-            var linq = from r in Operation.Code_Data.AsEnumerable() where r.Field<string>("Title") == Title select r;
-            if (linq.Count<DataRow>() > 0) { return "出错,此标题已添加"; }
-            linq = from r in Operation.Code_Data.AsEnumerable() where r.Field<string>("Title") == OldTitle select r;
+            if (Title != OldTitle)
+            {
+                var linq_ = from r in Operation.Code_Data.AsEnumerable() where r.Field<string>("Title") == Title select r;
+                if (linq_.Count<DataRow>() > 0) { return "出错,此标题已添加"; }
+            }
+            var linq = from r in Operation.Code_Data.AsEnumerable() where r.Field<string>("Title") == OldTitle select r;
             string Objectid = linq.First().Field<string>("ObjectId");
             CodeModel codeModel = new CodeModel("Code_tb");
             codeModel.objectId = Objectid;

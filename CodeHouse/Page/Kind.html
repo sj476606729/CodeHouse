@@ -150,7 +150,9 @@
                     data: pd,
                     dataType: "json",
                     error: function (textstatus) {
-
+                        AllNode = JSON.parse(Old_AllNode);
+                        var data = TreeData(AllNode, "无");
+                        NodeOperate(data);
                         alert('修改代码出错');
                         // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
                     },
@@ -302,7 +304,7 @@
         //节点操作
         function NodeOperate(jsonDataTree) {
             //导入分类数据
-
+            
             $('#tree').treeview({
                 data: jsonDataTree,         // data is not optionals
                 levels: 1,
@@ -320,7 +322,6 @@
                 }
                 $('#addcode').attr("disabled", true);
                 $('#addkind').attr("disabled", true);
-
                 var pd = { "id": "ShowData", "Name": node.text }
                 $.ajax({
                     type: "post",
