@@ -534,6 +534,8 @@ namespace Operate
         /// <returns></returns>
         public string ModifyCode(string Title, string Code, string Id,string OldTitle)
         {
+            try
+            {
             if (Title != OldTitle)
             {
                 var linq_ = from r in Operation.Code_Data.AsEnumerable() where r.Field<string>("Title") == Title select r;
@@ -571,7 +573,12 @@ namespace Operate
                 }
                 else {return "出错,修改代码数据成功，修改标题失败"; }
             }
-            else return "出错,修改i代码数据失败";
+            else return "出错,修改代码数据失败";
+            }
+            catch(Exception e)
+            {
+                return "出错," + e.Message;
+            }
         }
         /// <summary>
         /// 删除分类
