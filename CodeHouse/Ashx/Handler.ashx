@@ -45,6 +45,14 @@ public class Handler : IHttpHandler,IRequiresSessionState{
                 result_str = operation.TestUser(HttpContext.Current.Request.Form["username"], HttpContext.Current.Request.Form["password"]);
                 if (result_str != null) { HttpContext.Current.Session["username"] = result_str; context.Response.Write("{\"result\":\""+result_str+"\"}");}
                 break;
+            case "login2":
+                result_str = operation.TestUser(HttpContext.Current.Request.Form["username"], HttpContext.Current.Request.Form["password"]);
+                if (result_str != null) { HttpContext.Current.Session["username"] = result_str; context.Response.Redirect(@"~/Page/MainPage.html?name="+result_str+"");}
+                else
+                {
+                        context.Response.Redirect(@"~/Page/login/login.html");
+                }
+                break;
             case "FirstUser":
                 if (HttpContext.Current.Session["username"] != null)
                 {
@@ -61,7 +69,7 @@ public class Handler : IHttpHandler,IRequiresSessionState{
                 break;
             case "Search":
                 result_str = searchOperate.SearchTitle(HttpContext.Current.Request.Form["search"]);
-                if (result_str.Substring(0, 1) != "[") { context.Response.Write("{\"result\":\"" + result_str + "\"}"); }else { context.Response.Write(result_str);}
+                context.Response.Write(result_str);
                 break;
             case "MoveKind":
                 result_str = operation.MoveKind(HttpContext.Current.Request.Form["node"], HttpContext.Current.Request.Form["newnode"]);

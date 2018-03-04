@@ -18,26 +18,49 @@ namespace Search
         {
             Util util = Util.Instance;
             ArrayList list = new ArrayList();
+            ArrayList list2 = new ArrayList();
             ArrayList result = new ArrayList();
             if (Operate.Operation.Code_Data == null) { return "还未初始化，请等待"; }
             foreach(DataRow row in Operate.Operation.Code_Data.Rows)
             {
                 list.Add(row["Title"]);
+                
+
+                list2.Add(row["ObjectId"]);
             }
-            result = util.paixu(list, Title);
-            if (result.Count > 0)
+            CallBack callback = new CallBack();
+            util.paixu(list, list2, Title, callback);
+            return callback.result;
+
+
+        }
+    }
+    public class CallBack : Back
+    {
+
+        public string result { get; set; }
+        public void success(ArrayList listtitle, ArrayList listtitleid)
+        {
+
+            if (listtitle.Count > 0)
             {
                 string json = "[";
-                foreach (object data in result)
+                string json2 = "[";
+                foreach (object data in listtitle)
                 {
                     json += "{\"title\":\"" + data.ToString() + "\"},";
                 }
-                json =json.Substring(0,json.Length-1)+ "]";
-                return json;
+                json = json.Substring(0, json.Length - 1) + "]";
+                foreach (object data in listtitleid)
+                {
+                    json2 += "{\"objectid\":\"" + data.ToString() + "\"},";
+                }
+                json2 = json2.Substring(0, json2.Length - 1) + "]";
+
+                result = "{\"result\":" + json + ",\"objectids\":" + json2 + "}";
+             
             }
-            else  return "未搜到信息";
-            
-            
+            else result = "未搜到信息";
         }
     }
     public class Util
@@ -47,9 +70,9 @@ namespace Search
          * equls 和 plus根据自己需要调整大小
          */
         //匹配值达到equls 则在listview中显示出来（匹配值为最终匹配值包含了plus）
-        private const float equls = 0.25f;
+        private const float equls = 0.3f;
         //全包含情况下匹配值再加一个plus
-        private const float plus = 0.2f;
+        private const float plus = 0.25f;
         private Util() { }
 
         public static Util Instance
@@ -70,11 +93,11 @@ namespace Search
         /// <param name="数据搜索出来的数据集"></param>
         /// <param name="搜索的关键字"></param>
         /// <returns></returns>
-        public ArrayList paixu(ArrayList array, String title)
+        public void paixu(ArrayList array, ArrayList arrayid, String title, Back iback)
         {
             if (title.Length == 0)
             {
-                return array;
+                iback.success(array, arrayid);
             }
             title = title.ToLower();
             string[] array_s = (string[])array.ToArray(typeof(string));
@@ -82,6 +105,7 @@ namespace Search
             for (int i = 0; i < array.Count; i++)
             {
                 num[i] = (similarCalc(array[i].ToString().ToLower(), title));
+                num[i] += (similarCalc2(array[i].ToString().ToLower(), title));
                 if (array[i].ToString().ToLower().Contains(title))
                 {
                     num[i] += plus;
@@ -90,7 +114,7 @@ namespace Search
 
 
             double b;
-            string s;
+            string s, c;
             for (int i = 0; i < array.Count - 1; i++)
             {
 
@@ -106,12 +130,17 @@ namespace Search
                         b = num[j];
                         num[j] = num[i];
                         num[i] = b;
+
+                        c = arrayid[j].ToString();
+                        arrayid[j] = arrayid[i];
+                        arrayid[i] = c;
                     }
                 }
             }
 
             array = new ArrayList(array_s);
             ArrayList array2 = new ArrayList();
+            ArrayList array3 = new ArrayList();
             //排除
             for (int i = 0; i < array.Count; i++)
             {
@@ -119,11 +148,12 @@ namespace Search
                 {
 
                     array2.Add(array[i]);
+                    array3.Add(arrayid[i]);
                 }
             }
 
             // MessageBox.Show("" + array2.Count);
-            return array2;
+            iback.success(array2, array3);
         }
         /**
         *此处直至最后为字符串匹配算法

@@ -557,7 +557,8 @@ namespace Operate
                     data.SetField<string>("Code", Code);
                 }
                 DataSynchronous("Code_tb");
-                KindModel kindModel = new KindModel("Kind_tb");
+                if (Title != OldTitle) { 
+                    KindModel kindModel = new KindModel("Kind_tb");
                 kindModel.objectId = Id;
                 kindModel.Name = Title;
                 future1 = Bmob.UpdateTaskAsync<KindModel>(kindModel);
@@ -572,10 +573,16 @@ namespace Operate
                     return "成功";
                 }
                 else {return "出错,修改代码数据成功，修改标题失败"; }
-            }
+                    }
+                else
+                {
+                    return "成功";
+                }
+                }
             else return "出错,修改代码数据失败";
+                
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return "出错," + e.Message;
             }

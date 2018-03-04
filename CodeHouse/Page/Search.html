@@ -7,13 +7,15 @@
     <script src="../Frame/bootstrap/js/bootstrap.min.js"></script>
     <link href="../Frame/bootstrap/css/bootstrap.css" rel="stylesheet" />
     <script>
-        var frames;
+        var frames, NodeText, Nodeid, NodeAuthor;
         window.onload = function () {
             frames = window.parent.window.document.getElementById("frame");
         }
-        function ShowData(e) {
+        function ShowData(e,id) {
             var title = $(e).html();
+            Nodeid = id
             title = title.substring(4, title.length - 5);
+            NodeText = title;
             var pd = { "id": "ShowData", "Name": title }
             $.ajax({
                 type: "post",
@@ -29,10 +31,42 @@
                     frames.contentWindow.setHtml(decodeURI(obj[0]["Code"]));
                     $(window.parent.window.document.getElementById("title")).val(obj[0]["Title"]);
                     $(window.parent.window.document.getElementById("author")).html("作者：" + obj[0]["Author"]);
-
+                    NodeAuthor = obj[0]["Author"];
                 }
             });
         }
+        //修改
+        function Modify() {
+          
+            if (window.parent.USER != NodeAuthor) { alert("不能修改非本账户代码数据"); return; }
+            var title = $(window.parent.window.document.getElementById("title")).val(), Code = encodeURI(frames.contentWindow.getHtml());
+            if (title != NodeText) {
+                alert("搜索界面下禁止修改标题！");
+                return;
+            }
+            var pd = { "id": "ModifyCode", "Title": title, "Code": Code, "Key": Nodeid, "OldTitle": NodeText }
+            $.ajax({
+                type: "post",
+                url: '../Ashx/Handler.ashx',//注意此文件必须与当前文件在同一目录下
+                data: pd,
+                dataType: "json",
+                error: function (textstatus) {
+
+                    alert('修改代码出错');
+                    // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                },
+                success: function (result) {//result为任意定义的用于装载参数变量
+                    var obj = eval(result);
+                    Search();
+                    if ((obj.result + "").substr(0, 2) == "出错") {
+                        alert(obj.result);
+                    } else {
+                        alert("修改成功!");
+                    }
+                }
+            });
+        }
+
         //切换
         function Shift() {
             $(window.parent.window.document.getElementById("Kind_f")).css("width", "21%");
@@ -42,6 +76,7 @@
         function Search() {
             var search = $('#search').val();
             var pd = { id: "Search", search: search }
+           
             $.ajax({
                 type: "post",
                 url: '../Ashx/Handler.ashx',//注意此文件必须与当前文件在同一目录下
@@ -54,14 +89,15 @@
                 },
                 success: function (result) {//result为任意定义的用于装载参数变量
                     var datanav = eval(result);
-                    if (JSON.stringify(datanav).substr(0, 1) != "[") { alert(datanav.result); return; }
                     var tb = document.getElementById("search_list");
                     $('#search_list').html('');
-                    for (var i = 0; i < datanav.length; i++) {
+                    for (var i = 0; i < datanav.result.length; i++) {
                         var row = tb.insertRow(tb.rows.length);
-                        $(row).attr("onclick", "ShowData(this)");
+
+                        $(row).attr("onclick", "ShowData(this," + JSON.stringify(datanav.objectids[i].objectid) + ")");
+                    
                         var c1 = row.insertCell(0);
-                        c1.innerHTML = datanav[i].title;
+                        c1.innerHTML = datanav.result[i].title;
                     }
                 }
             });
@@ -85,8 +121,10 @@
                 <table style="width:100%;height:100%">
                     <tr style="height:50%">
                         <td style="width:100%">
-                            <input type="text" id="search" style="width:68%;font-size:85%;float:left" />
-                            <button style="width:25%;float:left;margin-left:3%;font-size:85%"class="btn btn-default" onclick="Search()">搜索</button>
+                            <input type="text" id="search" style="width:50%;font-size:85%;float:left" />
+                            <button style="width:22%;float:left;margin-left:3%;font-size:85%" class="btn btn-default" onclick="Search()">搜索</button>
+                            <button style="width:22%;float:left;margin-left:3%;font-size:85%" class="btn btn-default2" onclick="Modify()">修改</button>
+
                         </td>
                     </tr>
                     <tr style="height:50%">

@@ -9,11 +9,10 @@
     <script src="../Frame/layui/layui.js"></script>
     <link href="../Frame/layui/css/layui.css" rel="stylesheet" />
     <script>
-
+    
         var AllNode, layuiIndex;
         var USER;
         window.onload = function () {
-
             $('#body').css("height", document.documentElement.clientHeight * 0.95);
             
             // Layui弹出框引入
@@ -22,10 +21,42 @@
 
                 layer.msg('欢迎进入，专注采集各类IT资源整合');
             });
-
+            var Request = new Object();
+            Request = GetRequest();
+            if (Request == null) {
+                FirstUser();
+            } else {
+                USER = Request["name"];
+                $('#user').html(Request["name"]);
+            }
+         
+         
             Initial();
-            FirstUser();
+           
         }
+        function GetRequest() {
+
+            var url = location.search;
+            //获取url中"?"符后的字串
+        
+          
+            if (url.indexOf("?") != -1) {
+                var theRequest = new Object();
+                var str = url.substr(1);
+                strs = str.split("&");
+
+                for (var i = 0; i < strs.length; i++) {
+
+                    theRequest[strs[i].split("=")[0]] = (decodeURI(strs[i].split("=")[1]));
+                }
+                return theRequest;
+            } else {
+                return null;
+            }
+          
+
+        }
+
         //检索登陆账户
         function ShowUser() {
             var pd = { "id": "ShowUser" }
@@ -60,6 +91,7 @@
                 error: function (textstatus) {
 
                     $('#user').html("未登录");
+                    window.location.href = "login/login.html";
                     // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
                 },
                 success: function (result) {//result为任意定义的用于装载参数变量
