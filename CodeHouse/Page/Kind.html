@@ -15,7 +15,7 @@
         window.onload = function () {
             frames = window.parent.window.document.getElementById("frame");
             
-            initial();
+            FirstUser();
         }
         //初始化
         function initial() {
@@ -40,6 +40,31 @@
 
                 }
             });
+        }
+
+        //第一次打开检索账户
+        function FirstUser() {
+            var pd = { "id": "FirstUser" }
+            $.ajax({
+                type: "post",
+                url: '../Ashx/Handler.ashx',//注意此文件必须与当前文件在同一目录下
+                data: pd,
+                dataType: "json",
+                error: function (textstatus) {
+
+                    //$('#user').html("未登录");
+                    //window.location.href = "login/login.html";
+                    // $.dialog.alert('错误信息：' + errorThrown, function () { }, winObj);
+                },
+                success: function (result) {//result为任意定义的用于装载参数变量
+                    initial();
+                }
+            });
+            var data = '<p> 参考网址：</p>' +
+                '<p>参考网址：</p>' +
+                '<hr />' +
+                '<p>&nbsp;</p>'
+            frames.contentWindow.setHtml(data);
         }
         //添加数据
         function AddData() {
